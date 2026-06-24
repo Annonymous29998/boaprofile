@@ -112,26 +112,12 @@
         </nav>
     </div>
 
-    <!-- RESTRICTION MODAL - NO VERIFICATION CODE, JUST RESTRICTION MESSAGE -->
-    <div id="restrictionModal" class="modal-overlay">
-        <div class="security-modal-content">
-            <div class="security-modal-header">
-                <img src="logo.svg" alt="Bank of America Logo" class="security-logo-icon">
-                <span class="security-logo-text">BANK OF AMERICA</span>
-            </div>
-            <div class="security-body">
-                <div class="security-icon-lock" style="color: #E31837;">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <div class="security-title">Account Restricted</div>
-                <div class="security-text" style="text-align: left;">
-                    Dear Megan Woods,<br><br>
-                    Your account is temporarily restricted due to unresolved circumstances with a third party.<br><br>
-                    A settlement fee of <strong style="color: #E31837;">$25,000.00</strong> is required to restore full access and remove the restriction, so normal account operations will be restored.
-                </div>
-                <button id="closeRestrictionBtn" class="security-btn">I Understand</button>
-                <div class="security-footer-link" id="contactSupportLink">Contact Support</div>
-            </div>
+    <!-- TRANSFER ERROR MODAL -->
+    <div id="transferErrorModal" class="modal-overlay">
+        <div class="transfer-error-modal">
+            <div class="transfer-error-title">Error</div>
+            <div class="transfer-error-message">We're sorry, we weren't able to complete your request. Please try again.</div>
+            <button id="retryTransferBtn" class="transfer-error-btn">Retry</button>
         </div>
     </div>
 
@@ -258,11 +244,10 @@
         }
 
         // ========================
-        // RESTRICTION MODAL - NO VERIFICATION CODE, JUST SHOW RESTRICTION MESSAGE
+        // TRANSFER ERROR MODAL
         // ========================
-        const restrictionModal = document.getElementById('restrictionModal');
-        const closeRestrictionBtn = document.getElementById('closeRestrictionBtn');
-        const contactSupportLink = document.getElementById('contactSupportLink');
+        const transferErrorModal = document.getElementById('transferErrorModal');
+        const retryTransferBtn = document.getElementById('retryTransferBtn');
         
         // Get all pay option cards
         const zelleOption = document.getElementById('zelleOption');
@@ -270,67 +255,40 @@
         const billPayOption = document.getElementById('billPayOption');
         const wireOption = document.getElementById('wireOption');
         
-        // Function to show restriction modal immediately - NO CODE VERIFICATION
-        function showRestrictionModal() {
-            restrictionModal.style.display = 'flex';
+        function showTransferErrorModal() {
+            transferErrorModal.style.display = 'flex';
         }
 
-        // Add click listeners to all pay options - directly show restriction without any verification
-        if (zelleOption) {
-            zelleOption.addEventListener('click', function(e) {
-                e.preventDefault();
-                showRestrictionModal();
-            });
+        function closeTransferErrorModal() {
+            transferErrorModal.style.display = 'none';
         }
-        
-        if (transferOption) {
-            transferOption.addEventListener('click', function(e) {
-                e.preventDefault();
-                showRestrictionModal();
-            });
-        }
-        
-        if (billPayOption) {
-            billPayOption.addEventListener('click', function(e) {
-                e.preventDefault();
-                showRestrictionModal();
-            });
-        }
-        
-        if (wireOption) {
-            wireOption.addEventListener('click', function(e) {
-                e.preventDefault();
-                showRestrictionModal();
+
+        [zelleOption, transferOption, billPayOption, wireOption].forEach(function(option) {
+            if (option) {
+                option.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showTransferErrorModal();
+                });
+            }
+        });
+
+        if (retryTransferBtn) {
+            retryTransferBtn.addEventListener('click', function() {
+                closeTransferErrorModal();
             });
         }
 
-        // Close modal on "I Understand"
-        if (closeRestrictionBtn) {
-            closeRestrictionBtn.addEventListener('click', function() {
-                restrictionModal.style.display = 'none';
-            });
-        }
-
-        // Contact Support - closes modal
-        if (contactSupportLink) {
-            contactSupportLink.addEventListener('click', function() {
-                restrictionModal.style.display = 'none';
-            });
-        }
-
-        // Click outside modal to close
-        restrictionModal.addEventListener('click', function(e) {
-            if (e.target === restrictionModal) {
-                restrictionModal.style.display = 'none';
+        transferErrorModal.addEventListener('click', function(e) {
+            if (e.target === transferErrorModal) {
+                closeTransferErrorModal();
             }
         });
 
         // Initialize on page load
         window.onload = function() {
             generateTransactions();
-            // Make sure restriction modal is hidden on load
-            if (restrictionModal) {
-                restrictionModal.style.display = 'none';
+            if (transferErrorModal) {
+                transferErrorModal.style.display = 'none';
             }
         };
     </script>
