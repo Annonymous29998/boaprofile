@@ -39,7 +39,7 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <div class="tab" onclick="window.location.href='dashboard.html'">Accounts</div>
+            <div class="tab" id="accountsTab">Accounts</div>
             <div class="tab active">Pay & Transfer</div>
         </div>
 
@@ -138,6 +138,10 @@
         });
         
         document.getElementById('accounts-tab').addEventListener('click', function() {
+            window.location.href = 'dashboard.html';
+        });
+
+        document.getElementById('accountsTab').addEventListener('click', function() {
             window.location.href = 'dashboard.html';
         });
 

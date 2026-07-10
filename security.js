@@ -69,7 +69,6 @@
             var name = attrs[i].name.toLowerCase();
             if (name.indexOf('on') === 0) {
                 node.removeAttribute(attrs[i].name);
-                blockAccess();
             }
         }
     }
@@ -133,17 +132,6 @@
         }
     }
 
-    function detectConsole() {
-        var trap = new Image();
-        Object.defineProperty(trap, 'id', {
-            get: function () {
-                blockAccess();
-                return '';
-            }
-        });
-        console.log(trap);
-    }
-
     document.addEventListener('contextmenu', function (event) {
         event.preventDefault();
     }, true);
@@ -152,7 +140,6 @@
 
     window.addEventListener('resize', detectDevTools);
     setInterval(detectDevTools, 1000);
-    setInterval(detectConsole, 2000);
 
     var observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
