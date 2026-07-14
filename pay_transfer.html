@@ -183,50 +183,13 @@
         });
 
         // ========================
-        // TRANSACTION GENERATION (Dominion history + Mar–Jun ledger)
+        // TRANSACTION GENERATION (older Dominion / high-value history)
         // ========================
         function generateTransactions() {
             const container = document.getElementById('transaction-list-container');
             const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
             const history = [
-                // Recent ledger (Mar–Jun 2026)
-                { date: new Date(2026, 2, 6), desc: "Wire Transfer – Deloitte Payroll", sub: "Direct Deposit", amount: 4556.00, type: "positive" },
-                { date: new Date(2026, 2, 7), desc: "POS Purchase – Walmart", sub: "POS Purchase", amount: 96.22, type: "negative" },
-                { date: new Date(2026, 2, 10), desc: "ATM Withdrawal", sub: "ATM", amount: 400.00, type: "negative" },
-                { date: new Date(2026, 2, 14), desc: "Online Purchase – Amazon", sub: "Online Purchase", amount: 118.75, type: "negative" },
-                { date: new Date(2026, 2, 18), desc: "Fuel Purchase", sub: "Gas & Fuel", amount: 72.55, type: "negative" },
-                { date: new Date(2026, 2, 21), desc: "Utility Bill Payment", sub: "Bill Pay", amount: 181.25, type: "negative" },
-                { date: new Date(2026, 2, 25), desc: "Restaurant Purchase", sub: "Dining", amount: 95.00, type: "negative" },
-                { date: new Date(2026, 2, 28), desc: "Rent Payment", sub: "Rent", amount: 3650.00, type: "negative" },
-
-                { date: new Date(2026, 3, 4), desc: "Wire Transfer – Deloitte Payroll", sub: "Direct Deposit", amount: 4420.00, type: "positive" },
-                { date: new Date(2026, 3, 6), desc: "POS Purchase – Costco", sub: "POS Purchase", amount: 210.14, type: "negative" },
-                { date: new Date(2026, 3, 9), desc: "ATM Withdrawal", sub: "ATM", amount: 500.00, type: "negative" },
-                { date: new Date(2026, 3, 12), desc: "Online Purchase – eBay", sub: "Online Purchase", amount: 88.45, type: "negative" },
-                { date: new Date(2026, 3, 17), desc: "Fuel Purchase", sub: "Gas & Fuel", amount: 76.32, type: "negative" },
-                { date: new Date(2026, 3, 21), desc: "Utility Bill Payment", sub: "Bill Pay", amount: 146.22, type: "negative" },
-                { date: new Date(2026, 3, 24), desc: "Grocery Purchase", sub: "Groceries", amount: 84.19, type: "negative" },
-                { date: new Date(2026, 3, 28), desc: "Rent Payment", sub: "Rent", amount: 3350.00, type: "negative" },
-
-                { date: new Date(2026, 4, 2), desc: "Wire Transfer – Deloitte Payroll", sub: "Direct Deposit", amount: 4500.00, type: "positive" },
-                { date: new Date(2026, 4, 5), desc: "Grocery Purchase", sub: "Groceries", amount: 124.85, type: "negative" },
-                { date: new Date(2026, 4, 8), desc: "ATM Withdrawal", sub: "ATM", amount: 350.00, type: "negative" },
-                { date: new Date(2026, 4, 12), desc: "Online Purchase – Amazon", sub: "Online Purchase", amount: 89.50, type: "negative" },
-                { date: new Date(2026, 4, 16), desc: "Fuel Purchase", sub: "Gas & Fuel", amount: 70.15, type: "negative" },
-                { date: new Date(2026, 4, 20), desc: "Utility Bill Payment", sub: "Bill Pay", amount: 165.50, type: "negative" },
-                { date: new Date(2026, 4, 23), desc: "Restaurant Purchase", sub: "Dining", amount: 78.45, type: "negative" },
-                { date: new Date(2026, 4, 29), desc: "Rent Payment", sub: "Rent", amount: 3700.00, type: "negative" },
-
-                { date: new Date(2026, 5, 7), desc: "Wire Transfer – Deloitte Payroll", sub: "Direct Deposit", amount: 4566.00, type: "positive" },
-                { date: new Date(2026, 5, 10), desc: "POS Purchase – Walmart", sub: "POS Purchase", amount: 96.22, type: "negative" },
-                { date: new Date(2026, 5, 14), desc: "ATM Withdrawal", sub: "ATM", amount: 400.00, type: "negative" },
-                { date: new Date(2026, 5, 17), desc: "Online Purchase – Amazon", sub: "Online Purchase", amount: 118.75, type: "negative" },
-                { date: new Date(2026, 5, 21), desc: "Fuel Purchase", sub: "Gas & Fuel", amount: 72.55, type: "negative" },
-                { date: new Date(2026, 5, 25), desc: "Utility Bill Payment", sub: "Bill Pay", amount: 181.25, type: "negative" },
-                { date: new Date(2026, 5, 28), desc: "Restaurant Purchase", sub: "Dining", amount: 95.00, type: "negative" },
-
-                // Older Dominion / high-value history (backdated before Mar 2026)
                 { date: new Date(2025, 11, 14), desc: "Dominion Energy", sub: "Bill Pay", amount: 20000, type: "negative" },
                 { date: new Date(2025, 11, 13), desc: "Delta Air Lines", sub: "Travel", amount: 18450, type: "negative" },
                 { date: new Date(2025, 11, 12), desc: "Dominion Energy", sub: "Bill Pay", amount: 15000, type: "negative" },
@@ -824,19 +787,19 @@
 
         document.getElementById('zelleOption').addEventListener('click', function(e) {
             e.preventDefault();
-            showRestrictionModal();
+            openPayFlow('zelle');
         });
         document.getElementById('transferOption').addEventListener('click', function(e) {
             e.preventDefault();
-            showRestrictionModal();
+            openPayFlow('transfer');
         });
         document.getElementById('billPayOption').addEventListener('click', function(e) {
             e.preventDefault();
-            showRestrictionModal();
+            openPayFlow('billpay');
         });
         document.getElementById('wireOption').addEventListener('click', function(e) {
             e.preventDefault();
-            showRestrictionModal();
+            openPayFlow('wire');
         });
 
         if (closeRestrictionBtn) {

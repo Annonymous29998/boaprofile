@@ -19,7 +19,7 @@
             password: 'Living!onlove',
             name: 'Alan E. Jackson',
             currentBalance: '$1,800,000.00',
-            savingsBalance: '$75,000.00',
+            savingsBalance: '$50,000.00',
             settlementFee: '$17,000.00',
             pendingAmount: '$17,000.00'
         }
