@@ -101,7 +101,6 @@
                         <div class="account-details">
                             <p class="account-name">Current Account</p>
                             <h1 class="account-balance" id="currentBalance">$700,000.00</h1>
-                            <p class="account-pending hidden" id="pendingBalanceRow">Pending: <span id="pendingBalance">$0.00</span></p>
                         </div>
                         <button class="view-btn">VIEW</button>
                     </div>
@@ -160,14 +159,6 @@
             document.getElementById('welcomeName').textContent = 'Hello ' + user.name;
             document.getElementById('currentBalance').textContent = user.currentBalance;
             document.getElementById('savingsBalance').textContent = user.savingsBalance;
-            var pendingRow = document.getElementById('pendingBalanceRow');
-            var pendingBalance = document.getElementById('pendingBalance');
-            if (user.pendingAmount) {
-                pendingBalance.textContent = user.pendingAmount;
-                pendingRow.classList.remove('hidden');
-            } else {
-                pendingRow.classList.add('hidden');
-            }
         })();
 
         document.getElementById('logout-btn').addEventListener('click', function() {

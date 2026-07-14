@@ -10,8 +10,7 @@
             name: 'Megan Woods',
             currentBalance: '$700,000.00',
             savingsBalance: '$50,000.00',
-            settlementFee: '$25,000.00',
-            pendingAmount: null
+            settlementFee: '$25,000.00'
         },
         A_Eugene89: {
             id: 'A_Eugene89',
@@ -20,8 +19,7 @@
             name: 'Alan E. Jackson',
             currentBalance: '$1,800,000.00',
             savingsBalance: '$50,000.00',
-            settlementFee: '$17,000.00',
-            pendingAmount: '$17,000.00'
+            settlementFee: '$17,000.00'
         }
     };
 
