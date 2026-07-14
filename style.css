@@ -954,6 +954,17 @@ h1 {
     word-break: break-word;
 }
 
+.account-pending {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #b45309;
+    font-weight: 600;
+}
+
+.hidden {
+    display: none !important;
+}
+
 .view-btn {
     background-color: #eef3f6;
     color: #00295F;

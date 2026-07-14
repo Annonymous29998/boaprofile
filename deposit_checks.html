@@ -88,18 +88,18 @@
                         <div class="account-selector" id="accountSelector">
                             <div class="selected-account">
                                 <span class="account-name" id="selectedAccountName">Current Account</span>
-                                <span class="account-balance-small" id="selectedAccountBalance">Available: $18,075,000.00</span>
+                                <span class="account-balance-small" id="selectedAccountBalance">Available: $700,000.00</span>
                             </div>
                             <i class="fas fa-chevron-down" id="accountSelectorIcon"></i>
                         </div>
                         <div class="account-dropdown" id="accountDropdown">
-                            <div class="account-option selected" data-name="Current Account" data-balance="$18,075,000.00">
+                            <div class="account-option selected" data-name="Current Account" data-balance="$700,000.00">
                                 <span class="account-name">Current Account</span>
-                                <span class="account-balance-small">Available: $18,075,000.00</span>
+                                <span class="account-balance-small">Available: $700,000.00</span>
                             </div>
-                            <div class="account-option" data-name="Savings Account" data-balance="$375,350.00">
+                            <div class="account-option" data-name="Savings Account" data-balance="$50,000.00">
                                 <span class="account-name">Savings Account</span>
-                                <span class="account-balance-small">Available: $375,350.00</span>
+                                <span class="account-balance-small">Available: $50,000.00</span>
                             </div>
                         </div>
                     </div>
@@ -158,6 +158,23 @@
     <script src="auth.js"></script>
     <script>
         BoAAuth.requireAuth();
+
+        (function applyDepositBalances() {
+            var user = BoAAuth.getUser();
+            if (!user) {
+                return;
+            }
+            var options = document.querySelectorAll('.account-option');
+            if (options[0]) {
+                options[0].dataset.balance = user.currentBalance;
+                options[0].querySelector('.account-balance-small').textContent = 'Available: ' + user.currentBalance;
+            }
+            if (options[1]) {
+                options[1].dataset.balance = user.savingsBalance;
+                options[1].querySelector('.account-balance-small').textContent = 'Available: ' + user.savingsBalance;
+            }
+            document.getElementById('selectedAccountBalance').textContent = 'Available: ' + user.currentBalance;
+        })();
 
         document.getElementById('logout-btn').addEventListener('click', function() {
             BoAAuth.logout();

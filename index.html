@@ -162,22 +162,21 @@
             const rememberMe = document.getElementById('remember-me').checked;
 
             setTimeout(() => {
-                if (usernameInput === 'SarahDavis' && passwordInput === 'SarahDavis44') {
-                    // Handle Remember Me
+                const user = BoAAuth.authenticate(usernameInput, passwordInput);
+                if (user) {
                     if (rememberMe) {
                         localStorage.setItem('rememberedUsername', usernameInput);
                     } else {
                         localStorage.removeItem('rememberedUsername');
                     }
-                    BoAAuth.login();
+                    BoAAuth.login(user);
                     window.location.href = 'dashboard.html';
                 } else {
-                    // Restore button
                     loginBtn.innerHTML = originalBtnContent;
                     loginBtn.disabled = false;
                     showModal('Invalid username or password. Please try again.');
                 }
-            }, 2000); // 2 seconds delay
+            }, 2000);
         });
     </script>
 </body>
