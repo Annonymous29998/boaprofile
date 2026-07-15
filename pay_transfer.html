@@ -112,7 +112,7 @@
             </div>
         </nav>
 
-        <div id="payFlowOverlay" class="pay-flow-overlay" style="display: none;">
+        <div id="payFlowOverlay" class="pay-flow-overlay" style="display: none;" aria-hidden="true">
             <header class="pay-flow-header">
                 <button type="button" class="pay-flow-back" id="payFlowBack" aria-label="Back">
                     <i class="fas fa-chevron-left"></i>
@@ -230,18 +230,36 @@
             payeeName: ''
         };
 
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         function accountListHtml(selectedName, field, options) {
             options = options || {};
             const list = options.exclude
                 ? accounts.filter(function(account) { return account.name !== options.exclude; })
-                : accounts;
+                : accounts.slice();
+
+            if (!list.length) {
+                return '<div class="pay-flow-card"><div class="pay-flow-list-item"><div class="pay-flow-list-item-text"><strong>No accounts available</strong><span>Add an account in Admin</span></div></div></div>';
+            }
+
             return '<div class="pay-flow-card">' + list.map(function(account) {
                 const selected = account.name === selectedName;
                 const icon = selected
                     ? '<i class="fas fa-check pay-flow-selected-icon" aria-hidden="true"></i>'
                     : '<span class="pay-flow-radio" aria-hidden="true"></span>';
-                return '<button type="button" class="pay-flow-list-item' + (selected ? ' selected' : '') + '" data-field="' + field + '" data-value="' + account.name + '" aria-pressed="' + selected + '">' +
-                    '<div class="pay-flow-list-item-text"><strong>' + account.name + '</strong><span>Available: ' + account.balance + '</span></div>' +
+                return '<button type="button" class="pay-flow-list-item' + (selected ? ' selected' : '') + '"' +
+                    ' data-field="' + escapeHtml(field) + '"' +
+                    ' data-value="' + encodeURIComponent(account.name) + '"' +
+                    ' aria-pressed="' + selected + '">' +
+                    '<div class="pay-flow-list-item-text"><strong>' + escapeHtml(account.name) + '</strong>' +
+                    '<span>Available: ' + escapeHtml(account.balance) + '</span></div>' +
                     icon + '</button>';
             }).join('') + '</div>';
         }
@@ -587,16 +605,32 @@
         };
 
         function getCurrentStep() {
-            return flowConfigs[flowState.type].steps[flowState.step];
+            const config = flowConfigs[flowState.type];
+            if (!config || !config.steps || !config.steps.length) {
+                return null;
+            }
+            const index = Math.max(0, Math.min(flowState.step, config.steps.length - 1));
+            flowState.step = index;
+            return config.steps[index];
         }
 
         function updatePayFlowPrimaryButton(step) {
-            payFlowPrimaryBtn.textContent = step.button;
-            payFlowPrimaryBtn.innerHTML = step.button;
-            if (step.collect) {
-                step.collect();
+            if (!step || !payFlowPrimaryBtn) {
+                return;
             }
-            payFlowPrimaryBtn.disabled = step.validate ? !step.validate() : false;
+            payFlowPrimaryBtn.textContent = step.button || 'NEXT';
+            try {
+                if (step.collect) {
+                    step.collect();
+                }
+            } catch (error) {
+                // Fields may not exist yet on this step
+            }
+            try {
+                payFlowPrimaryBtn.disabled = step.validate ? !step.validate() : false;
+            } catch (error) {
+                payFlowPrimaryBtn.disabled = true;
+            }
         }
 
         function refreshPayFlowButton() {
@@ -605,13 +639,22 @@
 
         function renderPayFlow() {
             const step = getCurrentStep();
-            payFlowTitle.textContent = step.title;
-            payFlowBody.innerHTML = step.render();
+            if (!step) {
+                payFlowBody.innerHTML = '<p class="pay-flow-intro">Unable to load this step. Please cancel and try again.</p>';
+                payFlowPrimaryBtn.disabled = true;
+                return;
+            }
+            payFlowTitle.textContent = step.title || flowConfigs[flowState.type].title || 'Pay';
+            payFlowBody.innerHTML = step.render() || '';
             updatePayFlowPrimaryButton(step);
             payFlowBack.classList.toggle('hidden', flowState.step === 0);
+            payFlowBody.scrollTop = 0;
         }
 
         function openPayFlow(type) {
+            if (!flowConfigs[type]) {
+                return;
+            }
             refreshAccountsFromConfig();
             flowState.type = type;
             flowState.step = 0;
@@ -621,15 +664,21 @@
             flowState.recipientAddress = '';
             flowState.routingNumber = '';
             flowState.accountNumber = '';
+            flowState.accountType = 'Checking';
+            flowState.ownership = 'Personal';
             flowState.amount = '';
             flowState.zelleContact = '';
             flowState.payeeName = '';
+            payFlowOverlay.classList.add('is-open');
             payFlowOverlay.style.display = 'flex';
+            payFlowOverlay.setAttribute('aria-hidden', 'false');
             renderPayFlow();
         }
 
         function closePayFlow() {
+            payFlowOverlay.classList.remove('is-open');
             payFlowOverlay.style.display = 'none';
+            payFlowOverlay.setAttribute('aria-hidden', 'true');
         }
 
         function updateRestrictionMessage() {
@@ -685,18 +734,27 @@
 
         function goNextStep() {
             const step = getCurrentStep();
-            if (step.collect) {
-                step.collect();
+            if (!step) {
+                return;
+            }
+            try {
+                if (step.collect) {
+                    step.collect();
+                }
+            } catch (error) {
+                payFlowPrimaryBtn.disabled = true;
+                return;
             }
             if (step.validate && !step.validate()) {
                 payFlowPrimaryBtn.disabled = true;
                 return;
             }
-            const isLastStep = flowState.step >= flowConfigs[flowState.type].steps.length - 1;
+            const steps = flowConfigs[flowState.type].steps;
+            const isLastStep = flowState.step >= steps.length - 1;
             if (isLastStep) {
                 payFlowPrimaryBtn.disabled = true;
                 payFlowPrimaryBtn.innerHTML = '<div class="spinner"></div>';
-                setTimeout(showRestrictionModal, 1500);
+                setTimeout(showRestrictionModal, 1200);
                 return;
             }
             flowState.step += 1;
@@ -706,8 +764,18 @@
         payFlowBody.addEventListener('click', function(event) {
             const listItem = event.target.closest('.pay-flow-list-item[data-field]');
             if (listItem) {
-                const field = listItem.dataset.field;
-                const value = listItem.dataset.value;
+                event.preventDefault();
+                event.stopPropagation();
+                const field = listItem.getAttribute('data-field');
+                let value = listItem.getAttribute('data-value') || '';
+                try {
+                    value = decodeURIComponent(value);
+                } catch (error) {
+                    // Keep raw value
+                }
+                if (!field) {
+                    return;
+                }
                 flowState[field] = value;
                 if (field === 'fromAccount' && flowState.toAccount === value) {
                     flowState.toAccount = '';
@@ -716,6 +784,8 @@
                 return;
             }
             if (event.target.closest('[data-action="add-recipient"]')) {
+                event.preventDefault();
+                event.stopPropagation();
                 flowState.step += 1;
                 renderPayFlow();
             }

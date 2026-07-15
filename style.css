@@ -1120,6 +1120,40 @@ h1 {
     align-items: center;
     cursor: pointer;
     border: 2px dashed #ccc;
+    position: relative;
+    overflow: hidden;
+}
+
+.photo-box-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo-box.has-photo {
+    border-style: solid;
+    border-color: #0065B3;
+    background: #111;
+}
+
+.photo-box.has-photo .photo-box-content {
+    display: none;
+}
+
+.check-photo-preview {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-box.has-photo .check-photo-preview {
+    display: block;
+}
+
+.check-photo-input {
+    display: none;
 }
 
 .camera-icon-circle {
@@ -1558,13 +1592,19 @@ h1 {
     inset: 0;
     z-index: 300;
     background-color: #f4f4f4;
-    display: flex;
+    display: none;
     flex-direction: column;
     width: 100%;
+    height: 100%;
     max-width: 480px;
     margin: 0 auto;
     left: 0;
     right: 0;
+    overflow: hidden;
+}
+
+.pay-flow-overlay.is-open {
+    display: flex;
 }
 
 .pay-flow-header {
@@ -1609,10 +1649,12 @@ h1 {
 }
 
 .pay-flow-body {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 16px;
+    padding-bottom: 24px;
 }
 
 .pay-flow-footer {
@@ -1620,6 +1662,8 @@ h1 {
     background-color: #fff;
     border-top: 1px solid #e0e0e0;
     flex-shrink: 0;
+    position: relative;
+    z-index: 2;
 }
 
 .pay-flow-primary-btn {
@@ -1816,4 +1860,141 @@ h1 {
     text-transform: uppercase;
     letter-spacing: 0.4px;
     margin: 8px 0 10px;
-\n
+}
+
+/* Live check camera scanner */
+.check-camera-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 350;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.check-camera-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.check-camera-cancel {
+    border: none;
+    background: transparent;
+    color: #7ec8ff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 64px;
+    text-align: left;
+}
+
+.check-camera-title {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.check-camera-spacer {
+    min-width: 64px;
+}
+
+.check-camera-stage {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    background: #111;
+}
+
+.check-camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(1);
+}
+
+.check-camera-frame {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 86%;
+    height: 42%;
+    transform: translate(-50%, -50%);
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 10px;
+    pointer-events: none;
+}
+
+.check-camera-hint {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+    padding: 0 8px;
+}
+
+.check-camera-footer {
+    padding: 16px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.check-camera-status {
+    color: #ddd;
+    font-size: 13px;
+    text-align: center;
+    min-height: 18px;
+}
+
+.check-camera-shutter {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    background: transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.check-camera-shutter span {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.check-camera-shutter:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.check-camera-fallback-btn {
+    border: none;
+    background: transparent;
+    color: #7ec8ff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
