@@ -17,8 +17,8 @@
             username: 'A_Eugene89',
             password: 'Living!onlove',
             name: 'Alan E. Jackson',
-            currentBalance: '$1,800,000.00',
-            savingsBalance: '$50,000.00',
+            currentBalance: '$900,000.00',
+            savingsBalance: '$900,000.00',
             settlementFee: '$17,000.00'
         }
     };
