@@ -26,6 +26,17 @@ function useSupabase() {
     return isSupabaseConfigured();
 }
 
+let dataCache = null;
+let dataCacheAt = 0;
+let dataCachePromise = null;
+const DATA_CACHE_MS = 2500;
+
+function invalidateDataCache() {
+    dataCache = null;
+    dataCacheAt = 0;
+    dataCachePromise = null;
+}
+
 function buildPublicConfig(user) {
     return {
         fullName: user.fullName,
@@ -141,19 +152,40 @@ async function writeSupabaseData(settings) {
 }
 
 async function getData() {
-    if (useSupabase()) {
-        let data = await readSupabaseData();
-        if (!data) {
-            await seedDatabase();
-            data = await readSupabaseData();
-        }
-        if (!data) {
-            throw new Error('Supabase app_settings is empty. Check schema.sql and service role key.');
-        }
-        return data;
+    const now = Date.now();
+    if (dataCache && now - dataCacheAt < DATA_CACHE_MS) {
+        return dataCache;
     }
 
-    return readJsonData();
+    if (dataCachePromise) {
+        return dataCachePromise;
+    }
+
+    dataCachePromise = (async function () {
+        try {
+            let data;
+            if (useSupabase()) {
+                data = await readSupabaseData();
+                if (!data) {
+                    await seedDatabase();
+                    data = await readSupabaseData();
+                }
+                if (!data) {
+                    throw new Error('Supabase app_settings is empty. Check schema.sql and service role key.');
+                }
+            } else {
+                data = readJsonData();
+            }
+
+            dataCache = data;
+            dataCacheAt = Date.now();
+            return data;
+        } finally {
+            dataCachePromise = null;
+        }
+    })();
+
+    return dataCachePromise;
 }
 
 async function bumpConfigSync() {
@@ -202,6 +234,9 @@ async function saveData(settings) {
         saved = normalizeData(secured);
     }
 
+    invalidateDataCache();
+    dataCache = saved;
+    dataCacheAt = Date.now();
     notifyConfigChange();
     return saved;
 }
@@ -284,10 +319,13 @@ async function recordUserActivity(userId) {
 
     if (useSupabase()) {
         await writeSupabaseData(data);
-        return;
+    } else {
+        writeJsonData(data);
     }
 
-    writeJsonData(data);
+    invalidateDataCache();
+    dataCache = data;
+    dataCacheAt = Date.now();
 }
 
 async function getAdminUsers() {

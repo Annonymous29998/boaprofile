@@ -157,6 +157,19 @@ router.get('/admin/data', requireAdmin, async (req, res) => {
     }
 });
 
+router.get('/admin/blank-user', requireAdmin, async (req, res) => {
+    try {
+        const defaultData = require('../defaultData');
+        const user = defaultData.createBlankUser();
+        res.json({
+            success: true,
+            user: stripUserForAdmin(user)
+        });
+    } catch (error) {
+        return sendSafeError(res, 500, 'Unable to create user template.', error);
+    }
+});
+
 router.put('/admin/data', requireAdmin, async (req, res) => {
     try {
         const incoming = req.body || {};

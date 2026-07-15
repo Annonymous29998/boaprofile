@@ -33,7 +33,7 @@ app.use(function (req, res, next) {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(), payment=()');
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
     res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
 
@@ -50,7 +50,18 @@ app.use(function (req, res, next) {
 
 app.use(express.json({ limit: '2mb' }));
 app.use('/api', apiRoutes);
-app.use(express.static(rootDir));
+app.use(express.static(rootDir, {
+    etag: true,
+    lastModified: true,
+    maxAge: process.env.VERCEL === '1' || process.env.NODE_ENV === 'production' ? '1h' : 0,
+    setHeaders: function (res, filePath) {
+        if (/\.(?:css|js|svg|woff2?|png|jpg|jpeg|gif|ico)$/i.test(filePath)) {
+            res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+        } else if (/\.html?$/i.test(filePath)) {
+            res.setHeader('Cache-Control', 'no-cache');
+        }
+    }
+}));
 
 app.get('/admin', function (req, res) {
     res.sendFile(path.join(rootDir, 'admin', 'index.html'));

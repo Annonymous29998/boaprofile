@@ -9,7 +9,7 @@ let sessionRefreshTimer = null;
 
 const sections = {
     overview: { title: 'Overview', subtitle: 'Summary for the selected customer account' },
-    users: { title: 'Users', subtitle: 'Create customers, set login, balances, and transfer message' },
+    users: { title: 'Users', subtitle: 'Create customers (history, holdings, and restriction are auto-filled; edit anytime)' },
     accounts: { title: 'Accounts', subtitle: 'Advanced: add or edit additional accounts' },
     transactions: { title: 'Transactions', subtitle: 'Edit pay and transfer history for the selected user' },
     messages: { title: 'Account Restricted', subtitle: 'Edit the full restriction popup for the selected customer' },
@@ -444,8 +444,22 @@ function updateRestrictionPreview() {
     if (hintMsg) hintMsg.value = message;
 }
 
-function createBlankUser() {
+function createBlankUserFallback() {
     const suffix = Date.now();
+    const template = (appData && Array.isArray(appData.users) && appData.users[0]) || null;
+    const defaultInvest = {
+        totalValue: 178542.18,
+        changeAmount: 1932.8,
+        changePercent: 1.1,
+        holdings: [
+            { name: 'NVIDIA Corp', symbol: 'NVDA', value: 48250, change: 1125.4 },
+            { name: 'Tesla Inc', symbol: 'TSLA', value: 42180, change: 680.2 },
+            { name: 'Apple Inc', symbol: 'AAPL', value: 35920, change: 412.5 },
+            { name: 'Microsoft Corp', symbol: 'MSFT', value: 28500, change: 0 },
+            { name: 'Bitcoin Trust', symbol: 'GBTC', value: 23692.18, change: -285.3 }
+        ]
+    };
+
     return {
         id: 'user-' + suffix,
         fullName: 'New Customer',
@@ -461,14 +475,9 @@ function createBlankUser() {
             message: "We're sorry, we weren't able to complete your request. Please try again.",
             button: 'Retry'
         },
-        restriction: defaultRestriction(),
-        invest: {
-            totalValue: 0,
-            changeAmount: 0,
-            changePercent: 0,
-            holdings: []
-        },
-        transactions: [],
+        restriction: normalizeRestriction(template && template.restriction),
+        invest: JSON.parse(JSON.stringify((template && template.invest) || defaultInvest)),
+        transactions: JSON.parse(JSON.stringify((template && template.transactions) || [])),
         lastLoginAt: null,
         lastActiveAt: null
     };
@@ -1048,18 +1057,28 @@ function initAdminApp() {
         }
     });
 
-    bindClick('createUserBtn', function () {
+    bindClick('createUserBtn', async function () {
         if (!canCreateUser()) {
             showToast(USER_LIMIT_MESSAGE, true);
             return;
         }
         collectFormData();
-        const newUser = createBlankUser();
-        appData.users.push(newUser);
-        selectedUserId = newUser.id;
-        populateForm();
-        switchSection('users');
-        showToast('New user created. Set login, balances, and restriction fee, then Save.');
+        try {
+            const result = await apiRequest('/admin/blank-user');
+            const newUser = ensureUserShape(result.user || createBlankUserFallback());
+            appData.users.push(newUser);
+            selectedUserId = newUser.id;
+            populateForm();
+            switchSection('users');
+            showToast('New user created with default history, holdings, and restriction. Edit any fields, then Save.');
+        } catch (err) {
+            const newUser = ensureUserShape(createBlankUserFallback());
+            appData.users.push(newUser);
+            selectedUserId = newUser.id;
+            populateForm();
+            switchSection('users');
+            showToast('New user created with defaults. Edit login and balances, then Save.');
+        }
     });
 
     bindClick('deleteUserBtn', function () {

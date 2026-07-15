@@ -7,6 +7,10 @@ const sharedRestrictionBase = {
     support: 'Contact Support'
 };
 
+function deepClone(value) {
+    return JSON.parse(JSON.stringify(value));
+}
+
 function createBlankUser() {
     const suffix = Date.now();
     return {
@@ -14,23 +18,15 @@ function createBlankUser() {
         fullName: 'New Customer',
         username: 'user' + suffix,
         password: '',
+        loginPassword: '',
         accounts: [
             { name: 'Current Account', balance: 0 },
             { name: 'Savings Account', balance: 0 }
         ],
-        transferError: {
-            title: 'Error',
-            message: "We're sorry, we weren't able to complete your request. Please try again.",
-            button: 'Retry'
-        },
+        transferError: deepClone(sharedTransferError),
         restriction: Object.assign({}, sharedRestrictionBase, { settlementFee: 25000 }),
-        invest: {
-            totalValue: 0,
-            changeAmount: 0,
-            changePercent: 0,
-            holdings: []
-        },
-        transactions: [],
+        invest: deepClone(sharedInvest),
+        transactions: deepClone(sharedTransactions),
         lastLoginAt: null,
         lastActiveAt: null
     };
