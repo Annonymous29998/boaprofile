@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <script src="security.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bank of America - Deposit Checks</title>
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -39,7 +36,7 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <div class="tab" id="accountsTab">Accounts</div>
+            <div class="tab" onclick="window.location.href='dashboard.html'">Accounts</div>
             <div class="tab active">Deposit Checks</div>
         </div>
 
@@ -50,25 +47,17 @@
             <div class="deposit-container">
                 <!-- Check Photos -->
                 <div class="check-photos-section">
-                    <div class="photo-box" id="frontCheckBox" role="button" tabindex="0" aria-label="Upload front of check">
-                        <input type="file" id="frontCheckInput" class="check-photo-input" accept="image/*" capture="environment">
-                        <div class="photo-box-content" id="frontCheckContent">
-                            <div class="camera-icon-circle">
-                                <i class="fas fa-camera"></i>
-                            </div>
-                            <span class="photo-label">Front of Check</span>
+                    <div class="photo-box">
+                        <div class="camera-icon-circle">
+                            <i class="fas fa-camera"></i>
                         </div>
-                        <img id="frontCheckPreview" class="check-photo-preview" alt="">
+                        <span class="photo-label">Front of Check</span>
                     </div>
-                    <div class="photo-box" id="backCheckBox" role="button" tabindex="0" aria-label="Upload back of check">
-                        <input type="file" id="backCheckInput" class="check-photo-input" accept="image/*" capture="environment">
-                        <div class="photo-box-content" id="backCheckContent">
-                            <div class="camera-icon-circle">
-                                <i class="fas fa-camera"></i>
-                            </div>
-                            <span class="photo-label">Back of Check</span>
+                    <div class="photo-box">
+                        <div class="camera-icon-circle">
+                            <i class="fas fa-camera"></i>
                         </div>
-                        <img id="backCheckPreview" class="check-photo-preview" alt="">
+                        <span class="photo-label">Back of Check</span>
                     </div>
                 </div>
 
@@ -88,19 +77,12 @@
                         <div class="account-selector" id="accountSelector">
                             <div class="selected-account">
                                 <span class="account-name" id="selectedAccountName">Current Account</span>
-                                <span class="account-balance-small" id="selectedAccountBalance">Available: $700,000.00</span>
+                                <span class="account-balance-small" id="selectedAccountBalance">Available: $362,756.00</span>
                             </div>
                             <i class="fas fa-chevron-down" id="accountSelectorIcon"></i>
                         </div>
                         <div class="account-dropdown" id="accountDropdown">
-                            <div class="account-option selected" data-name="Current Account" data-balance="$700,000.00">
-                                <span class="account-name">Current Account</span>
-                                <span class="account-balance-small">Available: $700,000.00</span>
-                            </div>
-                            <div class="account-option" data-name="Savings Account" data-balance="$50,000.00">
-                                <span class="account-name">Savings Account</span>
-                                <span class="account-balance-small">Available: $50,000.00</span>
-                            </div>
+                            <!-- Accounts populated from config -->
                         </div>
                     </div>
                 </div>
@@ -111,7 +93,7 @@
                 </p>
 
                 <!-- Deposit Button -->
-                <button type="button" class="sign-in-btn deposit-btn" id="depositContinueBtn">
+                <button class="sign-in-btn deposit-btn">
                     Continue
                 </button>
             </div>
@@ -146,35 +128,49 @@
         </nav>
     </div>
 
-    <!-- DEPOSIT ERROR MODAL -->
-    <div id="depositErrorModal" class="modal-overlay">
-        <div class="transfer-error-modal">
-            <div class="transfer-error-title">Error</div>
-            <div class="transfer-error-message">We're sorry, we weren't able to complete your request. Please try again.</div>
-            <button id="retryDepositBtn" class="transfer-error-btn">Retry</button>
-        </div>
-    </div>
-
+    <script src="client-secure.js"></script>
+    <script src="config.js"></script>
     <script src="auth.js"></script>
     <script>
         BoAAuth.requireAuth();
+        const accountSelectorWrapper = document.getElementById('accountSelectorWrapper');
+        const accountSelector = document.getElementById('accountSelector');
+        const selectedAccountName = document.getElementById('selectedAccountName');
+        const selectedAccountBalance = document.getElementById('selectedAccountBalance');
 
-        (function applyDepositBalances() {
-            var user = BoAAuth.getUser();
-            if (!user) {
-                return;
-            }
-            var options = document.querySelectorAll('.account-option');
-            if (options[0]) {
-                options[0].dataset.balance = user.currentBalance;
-                options[0].querySelector('.account-balance-small').textContent = 'Available: ' + user.currentBalance;
-            }
-            if (options[1]) {
-                options[1].dataset.balance = user.savingsBalance;
-                options[1].querySelector('.account-balance-small').textContent = 'Available: ' + user.savingsBalance;
-            }
-            document.getElementById('selectedAccountBalance').textContent = 'Available: ' + user.currentBalance;
-        })();
+        function closeAccountDropdown() {
+            accountSelectorWrapper.classList.remove('open');
+        }
+
+        function openAccountDropdown() {
+            accountSelectorWrapper.classList.add('open');
+        }
+
+        function bindAccountOptions() {
+            const accountOptions = document.querySelectorAll('.account-option');
+            accountOptions.forEach(function(option) {
+                option.addEventListener('click', function(e) {
+                    e.stopPropagation();
+
+                    accountOptions.forEach(function(item) {
+                        item.classList.remove('selected');
+                    });
+                    option.classList.add('selected');
+
+                    selectedAccountName.textContent = option.dataset.name;
+                    selectedAccountBalance.textContent = 'Available: ' + option.dataset.balance;
+
+                    closeAccountDropdown();
+                });
+            });
+        }
+
+        window.bindDepositAccountOptions = bindAccountOptions;
+
+        BoAConfig.initPage(function () {
+            BoAConfig.renderDepositAccounts();
+            bindAccountOptions();
+        });
 
         document.getElementById('logout-btn').addEventListener('click', function() {
             BoAAuth.logout();
@@ -182,10 +178,6 @@
         });
 
         document.getElementById('accounts-tab').addEventListener('click', function() {
-            window.location.href = 'dashboard.html';
-        });
-
-        document.getElementById('accountsTab').addEventListener('click', function() {
             window.location.href = 'dashboard.html';
         });
 
@@ -197,22 +189,6 @@
             window.location.href = 'invest.html';
         });
 
-        const accountSelectorWrapper = document.getElementById('accountSelectorWrapper');
-        const accountSelector = document.getElementById('accountSelector');
-        const accountDropdown = document.getElementById('accountDropdown');
-        const accountSelectorIcon = document.getElementById('accountSelectorIcon');
-        const selectedAccountName = document.getElementById('selectedAccountName');
-        const selectedAccountBalance = document.getElementById('selectedAccountBalance');
-        const accountOptions = document.querySelectorAll('.account-option');
-
-        function closeAccountDropdown() {
-            accountSelectorWrapper.classList.remove('open');
-        }
-
-        function openAccountDropdown() {
-            accountSelectorWrapper.classList.add('open');
-        }
-
         accountSelector.addEventListener('click', function(e) {
             e.stopPropagation();
             if (accountSelectorWrapper.classList.contains('open')) {
@@ -222,107 +198,8 @@
             }
         });
 
-        accountOptions.forEach(function(option) {
-            option.addEventListener('click', function(e) {
-                e.stopPropagation();
-
-                accountOptions.forEach(function(item) {
-                    item.classList.remove('selected');
-                });
-                option.classList.add('selected');
-
-                selectedAccountName.textContent = option.dataset.name;
-                selectedAccountBalance.textContent = 'Available: ' + option.dataset.balance;
-
-                closeAccountDropdown();
-            });
-        });
-
         document.addEventListener('click', function() {
             closeAccountDropdown();
-        });
-
-        const frontCheckBox = document.getElementById('frontCheckBox');
-        const backCheckBox = document.getElementById('backCheckBox');
-        const frontCheckInput = document.getElementById('frontCheckInput');
-        const backCheckInput = document.getElementById('backCheckInput');
-        const frontCheckContent = document.getElementById('frontCheckContent');
-        const backCheckContent = document.getElementById('backCheckContent');
-        const frontCheckPreview = document.getElementById('frontCheckPreview');
-        const backCheckPreview = document.getElementById('backCheckPreview');
-        const depositContinueBtn = document.getElementById('depositContinueBtn');
-        const depositErrorModal = document.getElementById('depositErrorModal');
-        const retryDepositBtn = document.getElementById('retryDepositBtn');
-
-        function openCheckPicker(input) {
-            input.click();
-        }
-
-        function handleCheckPhoto(input, content, preview, box) {
-            input.addEventListener('change', function() {
-                const file = input.files && input.files[0];
-                if (!file) {
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    preview.src = event.target.result;
-                    preview.alt = box.id === 'frontCheckBox' ? 'Front of check preview' : 'Back of check preview';
-                    box.classList.add('has-photo');
-                };
-                reader.readAsDataURL(file);
-                input.value = '';
-            });
-        }
-
-        frontCheckBox.addEventListener('click', function(event) {
-            event.stopPropagation();
-            openCheckPicker(frontCheckInput);
-        });
-
-        backCheckBox.addEventListener('click', function(event) {
-            event.stopPropagation();
-            openCheckPicker(backCheckInput);
-        });
-
-        frontCheckBox.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                openCheckPicker(frontCheckInput);
-            }
-        });
-
-        backCheckBox.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                openCheckPicker(backCheckInput);
-            }
-        });
-
-        handleCheckPhoto(frontCheckInput, frontCheckContent, frontCheckPreview, frontCheckBox);
-        handleCheckPhoto(backCheckInput, backCheckContent, backCheckPreview, backCheckBox);
-
-        function showDepositErrorModal() {
-            depositErrorModal.style.display = 'flex';
-        }
-
-        function closeDepositErrorModal() {
-            depositErrorModal.style.display = 'none';
-        }
-
-        depositContinueBtn.addEventListener('click', function() {
-            showDepositErrorModal();
-        });
-
-        retryDepositBtn.addEventListener('click', function() {
-            closeDepositErrorModal();
-        });
-
-        depositErrorModal.addEventListener('click', function(event) {
-            if (event.target === depositErrorModal) {
-                closeDepositErrorModal();
-            }
         });
     </script>
 </body>

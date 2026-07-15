@@ -1,0 +1,24 @@
+{
+  "name": "boa-banking-app",
+  "version": "1.0.0",
+  "description": "Bank of America mobile banking app with Node.js backend",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "test:smoke": "playwright test tests/smoke.spec.js --project=chromium",
+    "test:e2e": "playwright test tests/e2e.spec.js --project=chromium",
+    "test:regression": "playwright test tests/regression.spec.js --project=chromium",
+    "test": "playwright test --project=chromium"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.2",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

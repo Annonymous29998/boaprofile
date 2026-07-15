@@ -5,52 +5,23 @@
     font-family: 'Arial', sans-serif;
 }
 
-html {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    overflow-x: hidden;
-}
-
-html,
 body {
-    overscroll-behavior-x: none;
-}
-
-button,
-a,
-.pay-option-card,
-.nav-item,
-.photo-box {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-}
-
-body {
-    background-color: #e8e8e8;
-    margin: 0;
+    background-color: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     min-height: 100vh;
-    min-height: 100dvh;
-    width: 100%;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
 }
 
 .mobile-container {
     width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
-    min-height: 100dvh;
+    max-width: 414px;
+    height: 100vh;
     background-color: white;
     position: relative;
-    overflow-x: hidden;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-}
-
-.mobile-container:not(.dashboard-mode) {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
 .splash-screen {
@@ -226,7 +197,7 @@ body {
 
 /* Main Content */
 .main-content {
-    padding: 16px;
+    padding: 20px 30px;
     flex-grow: 1;
 }
 
@@ -253,8 +224,8 @@ h1 {
     margin-bottom: 25px;
 }
 
-.login-form .input-label {
-    display: none;
+.input-label {
+    display: none; /* Hide label, use placeholder as visual cue per image */
 }
 
 .input-wrapper {
@@ -361,22 +332,11 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    height: 100dvh;
     background-color: rgba(0, 0, 0, 0.5);
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 2000;
-    padding: 16px;
-}
-
-.modal-overlay-contained {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    height: 100dvh;
-    z-index: 400;
 }
 
 /* Original Modal (Keep for other pages if needed) */
@@ -514,7 +474,7 @@ h1 {
     text-align: center;
 }
 
-.security-body .input-label {
+.input-label {
     font-size: 14px;
     font-weight: bold;
     color: #333;
@@ -696,23 +656,16 @@ h1 {
 
 .mobile-container.dashboard-mode {
     background-color: #f4f4f4;
-    position: relative;
-    min-height: 100vh;
-    min-height: 100dvh;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
+    overflow: hidden; /* Prevent container scroll */
     display: flex;
     flex-direction: column;
 }
 
 .mobile-container.dashboard-mode .main-content {
-    padding: 16px;
-    padding-bottom: 16px;
-    flex: 1 1 auto;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    padding: 20px;
+    flex-grow: 1; /* Take remaining space */
+    overflow-y: auto; /* Scroll internally */
+    /* Remove padding-bottom since nav is no longer absolute */
 }
 
 /* Header */
@@ -720,13 +673,11 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
+    padding: 40px 20px 15px; /* Adjust top padding for status bar */
     background-color: white;
     border-bottom: 1px solid #e0e0e0;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Prevent shrinking */
     z-index: 100;
-    position: sticky;
-    top: 0;
 }
 
 .nav-left, .nav-right {
@@ -738,10 +689,9 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-left: 12px;
+    margin-left: 20px;
     cursor: pointer;
     color: #666;
-    min-width: 0;
 }
 
 .nav-icon {
@@ -947,15 +897,9 @@ h1 {
 }
 
 .account-balance {
-    font-size: clamp(18px, 5.4vw, 24px);
+    font-size: 24px;
     font-weight: bold;
     color: #333;
-    line-height: 1.2;
-    word-break: break-word;
-}
-
-.hidden {
-    display: none !important;
 }
 
 .view-btn {
@@ -1005,16 +949,13 @@ h1 {
 /* Bottom Navigation */
 .bottom-nav {
     width: 100%;
-    max-width: 100%;
     background-color: white;
     display: flex;
     justify-content: space-around;
-    padding: 10px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+    padding: 10px 0 25px; /* Extra padding for home indicator */
     border-top: 1px solid #e0e0e0;
     flex-shrink: 0;
     z-index: 100;
-    position: sticky;
-    bottom: 0;
 }
 
 .bottom-nav .nav-item {
@@ -1132,16 +1073,485 @@ h1 {
     line-height: 1.3;
 }
 
-.pay-icon-container.red-bg {
-    background-color: #E31837;
-    color: white;
+.scheduled-section {
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.pay-icon-container.gray-bg {
-    background-color: #5f6b7a;
-    color: white;
+.section-header {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
 }
 
+.section-header h2 {
+    font-size: 16px;
+    color: #333;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 20px 0;
+    color: #888;
+    font-size: 14px;
+}
+
+/* Deposit Checks Styles */
+.deposit-container {
+    padding: 10px 0;
+}
+
+.check-photos-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.photo-box {
+    background-color: #e6e6e6;
+    border-radius: 12px;
+    width: 48%;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border: 2px dashed #ccc;
+}
+
+.camera-icon-circle {
+    width: 40px;
+    height: 40px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    color: #0065B3;
+}
+
+.photo-label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #666;
+}
+
+.deposit-input-group {
+    background-color: white;
+    padding: 0;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 25px;
+}
+
+.deposit-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.amount-input-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.currency-symbol {
+    font-size: 24px;
+    color: #333;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.deposit-amount-input {
+    border: none;
+    font-size: 24px;
+    width: 100%;
+    outline: none;
+    color: #333;
+    font-weight: bold;
+    padding: 10px 0;
+}
+
+.deposit-amount-input::placeholder {
+    color: #ccc;
+}
+
+.account-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    cursor: pointer;
+}
+
+.account-selector-wrapper {
+    position: relative;
+}
+
+.account-selector-wrapper.open .account-selector {
+    padding-bottom: 8px;
+}
+
+.account-selector-wrapper.open #accountSelectorIcon {
+    transform: rotate(180deg);
+}
+
+#accountSelectorIcon {
+    transition: transform 0.2s ease;
+    color: #666;
+}
+
+.account-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+    overflow: hidden;
+}
+
+.account-selector-wrapper.open .account-dropdown {
+    display: block;
+}
+
+.account-option {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.account-option:last-child {
+    border-bottom: none;
+}
+
+.account-option:hover {
+    background-color: #f5f8fc;
+}
+
+.account-option.selected {
+    background-color: #eef4fa;
+}
+
+.account-option .account-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.account-option .account-balance-small {
+    font-size: 12px;
+    color: #666;
+    margin-top: 3px;
+}
+
+.selected-account {
+    display: flex;
+    flex-direction: column;
+}
+
+.account-balance-small {
+    font-size: 12px;
+    color: #666;
+    margin-top: 3px;
+}
+
+.deposit-terms {
+    font-size: 11px;
+    color: #666;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.deposit-terms a {
+    color: #0065B3;
+    text-decoration: none;
+}
+
+.deposit-btn {
+    margin-top: 10px;
+    background-color: #0065B3; /* Blue for deposit action usually */
+}
+
+.deposit-btn:hover {
+    background-color: #005eb8;
+}
+
+/* Recent Transactions Styles */
+.recent-transactions-section {
+    background-color: white;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 8px; /* Optional: adds a slight curve if desired, but BofA is usually flat full width on mobile or card based */
+}
+
+.recent-transactions-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #333;
+}
+
+.transaction-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.transaction-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    margin-right: 15px;
+    color: #666;
+}
+
+.transaction-date .month {
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.transaction-date .day {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.transaction-details {
+    flex: 1;
+}
+
+.transaction-desc {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 4px 0;
+}
+
+.transaction-sub {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+}
+
+.transaction-amount {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: right;
+}
+
+.transaction-amount.positive {
+    color: #008a00; /* Green for deposits */
+}
+
+.transaction-amount.negative {
+    color: #e31837; /* Bank of America Red */
+}
+
+.transaction-date .year {
+    font-size: 10px;
+    color: #999;
+    margin-top: 2px;
+}
+
+
+/* Invest Page Styles */
+.invest-summary {
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+.invest-total-label {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 5px;
+}
+.invest-total-amount {
+    font-size: 32px;
+    font-weight: 300;
+    color: #333;
+    margin-bottom: 5px;
+}
+.invest-change {
+    font-size: 14px;
+    color: #008a00; /* Green */
+    font-weight: bold;
+}
+.invest-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 15px 20px 15px;
+    background-color: #f4f4f4;
+}
+.invest-btn {
+    flex: 1;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 0 5px;
+    text-align: center;
+    font-weight: bold;
+    color: #0065B3;
+    cursor: pointer;
+}
+.invest-btn:first-child { margin-left: 0; }
+.invest-btn:last-child { margin-right: 0; }
+
+.holdings-list {
+    background-color: white;
+}
+.holding-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.holding-name {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+.holding-symbol {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+.holding-value {
+    text-align: right;
+    font-weight: bold;
+    color: #333;
+}
+.holding-change {
+    text-align: right;
+    font-size: 12px;
+    color: #008a00;
+    margin-top: 2px;
+}
+.holding-change.negative {
+    color: #e31837;
+}
+.section-header {
+    padding: 15px 20px;
+    background-color: #f4f4f4;
+    font-weight: bold;
+    color: #555;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+/* Responsive Mobile View Only */
+@media only screen and (max-width: 480px) {
+    body {
+        background-color: white;
+        align-items: flex-start;
+        height: auto;
+        min-height: 100vh;
+    }
+    .mobile-container {
+        max-width: 100%;
+        height: auto;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+        overflow: visible; /* Let body handle scroll */
+    }
+    .main-content {
+        overflow: visible;
+    }
+    /* Ensure fixed headers/footers work if used */
+    .top-nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        z-index: 100;
+    }
+    .main-content {
+        padding-bottom: 80px; /* Space for bottom nav */
+    }
+}
+
+/* Security Error Message */
+.security-error-msg {
+    color: #e31837; /* BofA Red */
+    font-size: 14px;
+    margin-top: -15px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+.security-error-msg i {
+    margin-right: 5px;
+}
+
+/* Error Shake Animation */
+@keyframes error-shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.error-shake {
+    animation: error-shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    border-color: #e31837 !important;
+}
+
+/* Password Toggle Icon */
+.password-toggle {
+    position: absolute;
+    right: 60px; /* Positioned left of FORGOT link */
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
+    font-size: 16px;
+    z-index: 10;
+}\n
+
+/* Contained modal (phone frame) */
+.modal-overlay-contained {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    z-index: 400;
+}
+
+/* Pay Flow Wizard */
 /* Pay Flow Wizard */
 .pay-flow-overlay {
     position: absolute;
@@ -1406,648 +1816,4 @@ h1 {
     text-transform: uppercase;
     letter-spacing: 0.4px;
     margin: 8px 0 10px;
-}
-
-.scheduled-section {
-    background-color: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.section-header {
-    margin-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-
-.section-header h2 {
-    font-size: 16px;
-    color: #333;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 20px 0;
-    color: #888;
-    font-size: 14px;
-}
-
-/* Deposit Checks Styles */
-.deposit-container {
-    padding: 10px 0;
-}
-
-.check-photos-section {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-}
-
-.photo-box {
-    background-color: #e6e6e6;
-    border-radius: 12px;
-    width: 48%;
-    height: 120px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    border: 2px dashed #ccc;
-    position: relative;
-    overflow: hidden;
-}
-
-.check-photo-input {
-    position: absolute;
-    width: 0;
-    height: 0;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.photo-box-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    padding: 10px;
-    text-align: center;
-}
-
-.check-photo-preview {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none;
-}
-
-.photo-box.has-photo .check-photo-preview {
-    display: block;
-}
-
-.photo-box.has-photo .photo-box-content {
-    display: none;
-}
-
-.photo-box.has-photo {
-    border-style: solid;
-    border-color: #0065B3;
-    background-color: #fff;
-}
-
-.camera-icon-circle {
-    width: 40px;
-    height: 40px;
-    background-color: white;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 10px;
-    color: #0065B3;
-}
-
-.photo-label {
-    font-size: 12px;
-    font-weight: bold;
-    color: #666;
-}
-
-.deposit-input-group {
-    background-color: white;
-    padding: 0;
-    border-bottom: 1px solid #ccc;
-    margin-bottom: 25px;
-}
-
-.deposit-label {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 5px;
-    display: block;
-}
-
-.amount-input-wrapper {
-    display: flex;
-    align-items: center;
-}
-
-.currency-symbol {
-    font-size: 24px;
-    color: #333;
-    font-weight: bold;
-    margin-right: 5px;
-}
-
-.deposit-amount-input {
-    border: none;
-    font-size: 24px;
-    width: 100%;
-    outline: none;
-    color: #333;
-    font-weight: bold;
-    padding: 10px 0;
-}
-
-.deposit-amount-input::placeholder {
-    color: #ccc;
-}
-
-.account-selector {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    cursor: pointer;
-}
-
-.account-selector-wrapper {
-    position: relative;
-}
-
-.account-selector-wrapper.open .account-selector {
-    padding-bottom: 8px;
-}
-
-.account-selector-wrapper.open #accountSelectorIcon {
-    transform: rotate(180deg);
-}
-
-#accountSelectorIcon {
-    transition: transform 0.2s ease;
-    color: #666;
-}
-
-.account-dropdown {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    z-index: 100;
-    overflow: hidden;
-}
-
-.account-selector-wrapper.open .account-dropdown {
-    display: block;
-}
-
-.account-option {
-    display: flex;
-    flex-direction: column;
-    padding: 12px 14px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-}
-
-.account-option:last-child {
-    border-bottom: none;
-}
-
-.account-option:hover {
-    background-color: #f5f8fc;
-}
-
-.account-option.selected {
-    background-color: #eef4fa;
-}
-
-.account-option .account-name {
-    font-size: 14px;
-    font-weight: bold;
-    color: #333;
-}
-
-.account-option .account-balance-small {
-    font-size: 12px;
-    color: #666;
-    margin-top: 3px;
-}
-
-.selected-account {
-    display: flex;
-    flex-direction: column;
-}
-
-.account-balance-small {
-    font-size: 12px;
-    color: #666;
-    margin-top: 3px;
-}
-
-.deposit-terms {
-    font-size: 11px;
-    color: #666;
-    text-align: center;
-    margin-bottom: 20px;
-    line-height: 1.4;
-}
-
-.deposit-terms a {
-    color: #0065B3;
-    text-decoration: none;
-}
-
-.deposit-btn {
-    margin-top: 10px;
-    background-color: #0065B3; /* Blue for deposit action usually */
-}
-
-.deposit-btn:hover {
-    background-color: #005eb8;
-}
-
-/* Recent Transactions Styles */
-.recent-transactions-section {
-    background-color: white;
-    padding: 16px;
-    margin: 20px -16px 0;
-    border-radius: 0;
-    overflow: hidden;
-}
-
-.recent-transactions-section h3 {
-    margin-top: 0;
-    margin-bottom: 12px;
-    font-size: 17px;
-    font-weight: 700;
-    color: #333;
-}
-
-.transaction-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.transaction-item {
-    display: grid;
-    grid-template-columns: minmax(38px, 44px) minmax(0, 1fr) auto;
-    gap: 8px 10px;
-    align-items: start;
-    padding: 14px 0;
-    border-bottom: 1px solid #e8e8e8;
-}
-
-.transaction-item:last-child {
-    border-bottom: none;
-}
-
-.transaction-date {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    color: #666;
-    grid-column: 1;
-}
-
-.transaction-date .month {
-    font-size: 11px;
-    text-transform: uppercase;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.transaction-date .day {
-    font-size: 17px;
-    font-weight: 700;
-    color: #333;
-    line-height: 1.2;
-}
-
-.transaction-details {
-    min-width: 0;
-    grid-column: 2;
-    overflow: hidden;
-}
-
-.transaction-desc {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 4px 0;
-    line-height: 1.35;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-.transaction-sub {
-    font-size: 12px;
-    color: #666;
-    margin: 0;
-    line-height: 1.4;
-}
-
-.transaction-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.transaction-meta-line {
-    display: block;
-    font-size: 12px;
-    color: #666;
-    line-height: 1.4;
-    overflow-wrap: break-word;
-}
-
-.transaction-ref {
-    color: #888;
-    font-size: 11px;
-    margin-top: 1px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-}
-
-.transaction-ref::-webkit-scrollbar {
-    display: none;
-}
-
-.transaction-ref-label {
-    margin-right: 4px;
-}
-
-.transaction-ref-code {
-    font-size: 10px;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    word-break: keep-all;
-    overflow-wrap: normal;
-}
-
-.transaction-amount {
-    grid-column: 3;
-    grid-row: 1;
-    align-self: start;
-    justify-self: end;
-    font-size: 14px;
-    font-weight: 700;
-    text-align: right;
-    line-height: 1.35;
-    padding-top: 1px;
-    white-space: nowrap;
-    max-width: none;
-}
-
-.transaction-amount.positive {
-    color: #008a00;
-}
-
-.transaction-amount.negative {
-    color: #e31837;
-}
-
-.transaction-date .year {
-    font-size: 10px;
-    color: #999;
-    margin-top: 2px;
-    line-height: 1.2;
-}
-
-
-/* Invest Page Styles */
-.invest-summary {
-    background-color: white;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #e0e0e0;
-}
-.invest-total-label {
-    font-size: 14px;
-    color: #555;
-    margin-bottom: 5px;
-}
-.invest-total-amount {
-    font-size: clamp(24px, 7vw, 32px);
-    font-weight: 300;
-    color: #333;
-    margin-bottom: 5px;
-    line-height: 1.2;
-    word-break: break-word;
-}
-.invest-change {
-    font-size: 14px;
-    color: #008a00; /* Green */
-    font-weight: bold;
-}
-.invest-actions {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 15px 20px 15px;
-    background-color: #f4f4f4;
-}
-.invest-btn {
-    flex: 1;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 10px;
-    margin: 0 5px;
-    text-align: center;
-    font-weight: bold;
-    color: #0065B3;
-    cursor: pointer;
-}
-.invest-btn:first-child { margin-left: 0; }
-.invest-btn:last-child { margin-right: 0; }
-
-.holdings-list {
-    background-color: white;
-}
-.holding-item {
-    padding: 15px 20px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.holding-name {
-    font-weight: bold;
-    font-size: 16px;
-    color: #333;
-}
-.holding-symbol {
-    font-size: 12px;
-    color: #666;
-    margin-top: 2px;
-}
-.holding-value {
-    text-align: right;
-    font-weight: bold;
-    color: #333;
-    font-size: clamp(14px, 4vw, 16px);
-    word-break: break-word;
-}
-.holding-change {
-    text-align: right;
-    font-size: 12px;
-    color: #008a00;
-    margin-top: 2px;
-}
-.holding-change.negative {
-    color: #e31837;
-}
-.section-header {
-    padding: 15px 20px;
-    background-color: #f4f4f4;
-    font-weight: bold;
-    color: #555;
-    font-size: 14px;
-    text-transform: uppercase;
-}
-
-/* Mobile-only responsive tweaks */
-@media screen and (max-width: 360px) {
-    .main-content {
-        padding: 16px;
-    }
-
-    .splash-screen {
-        padding: 50px 16px 32px;
-    }
-
-    .splash-logo-wrap {
-        margin-top: 60px;
-    }
-
-    .splash-brand {
-        font-size: 14px;
-        letter-spacing: 3px;
-    }
-
-    .nav-text,
-    .bottom-nav .nav-item span {
-        font-size: 9px;
-    }
-
-    .nav-icon {
-        font-size: 18px;
-    }
-
-    .nav-item {
-        margin-left: 8px;
-    }
-
-    .account-item {
-        flex-wrap: wrap;
-        gap: 12px;
-        padding: 16px;
-    }
-
-    .view-btn {
-        margin-left: auto;
-    }
-
-    .pay-options-grid {
-        gap: 10px;
-    }
-
-    .pay-option-card {
-        padding: 14px 10px;
-    }
-
-    .pay-option-text {
-        font-size: 12px;
-    }
-
-    .transaction-item {
-        grid-template-columns: minmax(34px, 38px) minmax(0, 1fr) auto;
-        gap: 6px 8px;
-        padding: 12px 0;
-    }
-
-    .transaction-date .day {
-        font-size: 15px;
-    }
-
-    .transaction-desc {
-        font-size: 13px;
-    }
-
-    .transaction-sub,
-    .transaction-meta-line {
-        font-size: 11px;
-    }
-
-    .transaction-amount {
-        font-size: 13px;
-    }
-
-    .invest-total-amount {
-        font-size: 26px;
-    }
-
-    .holding-item {
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 14px 16px;
-    }
-}
-
-@media screen and (orientation: landscape) and (max-height: 500px) {
-    .splash-logo-wrap {
-        margin-top: 20px;
-    }
-
-    .splash-screen {
-        padding-top: 24px;
-        padding-bottom: 24px;
-    }
-
-    .header {
-        padding-top: 24px;
-    }
-
-    .top-nav {
-        padding-top: calc(8px + env(safe-area-inset-top, 0px));
-    }
-}
-
-/* Security Error Message */
-.security-error-msg {
-    color: #e31837; /* BofA Red */
-    font-size: 14px;
-    margin-top: -15px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-.security-error-msg i {
-    margin-right: 5px;
-}
-
-/* Error Shake Animation */
-@keyframes error-shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-
-.error-shake {
-    animation: error-shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-    border-color: #e31837 !important;
-}
-
-/* Password Toggle Icon */
-.password-toggle {
-    position: absolute;
-    right: 60px; /* Positioned left of FORGOT link */
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #666;
-    font-size: 16px;
-    z-index: 10;
-}
+\n

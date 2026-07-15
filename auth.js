@@ -1,66 +1,31 @@
 (function () {
     const AUTH_KEY = 'boaLoggedIn';
-    const USER_KEY = 'boaCurrentUser';
-
-    const USERS = {
-        meganwoods: {
-            id: 'meganwoods',
-            username: 'meganwoods',
-            password: 'Jesus@2001',
-            name: 'Megan Woods',
-            currentBalance: '$700,000.00',
-            savingsBalance: '$50,000.00',
-            settlementFee: '$25,000.00'
-        },
-        A_Eugene89: {
-            id: 'A_Eugene89',
-            username: 'A_Eugene89',
-            password: 'Living!onlove',
-            name: 'Alan E. Jackson',
-            currentBalance: '$900,000.00',
-            savingsBalance: '$900,000.00',
-            settlementFee: '$17,000.00'
-        }
-    };
-
-    function findUser(username, password) {
-        var key;
-        for (key in USERS) {
-            if (!Object.prototype.hasOwnProperty.call(USERS, key)) {
-                continue;
-            }
-            var user = USERS[key];
-            if (user.username === username && user.password === password) {
-                return user;
-            }
-        }
-        return null;
-    }
+    const USER_ID_KEY = 'boaUserId';
+    const USER_TOKEN_KEY = 'boaUserToken';
 
     window.BoAAuth = {
-        users: USERS,
-        authenticate: function (username, password) {
-            return findUser(username, password);
-        },
-        login: function (userOrId) {
-            var user = typeof userOrId === 'string' ? USERS[userOrId] : userOrId;
-            if (!user) {
-                return false;
-            }
+        login: function (userId, token) {
             sessionStorage.setItem(AUTH_KEY, 'true');
-            sessionStorage.setItem(USER_KEY, user.id);
-            return true;
+            if (userId) {
+                sessionStorage.setItem(USER_ID_KEY, userId);
+            }
+            if (token) {
+                sessionStorage.setItem(USER_TOKEN_KEY, token);
+            }
         },
         logout: function () {
             sessionStorage.removeItem(AUTH_KEY);
-            sessionStorage.removeItem(USER_KEY);
+            sessionStorage.removeItem(USER_ID_KEY);
+            sessionStorage.removeItem(USER_TOKEN_KEY);
         },
         isLoggedIn: function () {
-            return sessionStorage.getItem(AUTH_KEY) === 'true' && !!this.getUser();
+            return sessionStorage.getItem(AUTH_KEY) === 'true' && !!this.getToken();
         },
-        getUser: function () {
-            var id = sessionStorage.getItem(USER_KEY);
-            return id && USERS[id] ? USERS[id] : null;
+        getUserId: function () {
+            return sessionStorage.getItem(USER_ID_KEY);
+        },
+        getToken: function () {
+            return sessionStorage.getItem(USER_TOKEN_KEY);
         },
         requireAuth: function () {
             if (!this.isLoggedIn()) {

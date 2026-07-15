@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>BOA Admin Console</title>
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('boaAdminToken')) {
+                    document.documentElement.classList.add('admin-session-pending');
+                }
+            } catch (error) {
+                // Ignore storage access errors
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/admin/admin.css?v=17">
+</head>
+<body>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <div id="loginView" class="login-view">
+        <div class="login-panel">
+            <div class="brand-block">
+                <img src="/logo.svg" alt="Logo" class="brand-logo">
+                <h1>Admin Console</h1>
+                <p>Secure management for account data, balances, and transaction history.</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <label>Username</label>
+                <input type="text" id="loginUsername" autocomplete="username" required>
+                <label>Password</label>
+                <div class="password-field">
+                    <input type="password" id="loginPassword" autocomplete="current-password" required>
+                    <button type="button" class="password-toggle" data-target="loginPassword" aria-label="Show password">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Sign In</button>
+                <p class="form-error" id="loginError"></p>
+            </form>
+            <a href="/index.html" class="back-link">Back to banking app</a>
+        </div>
+    </div>
+
+    <div id="dashboardView" class="dashboard-view" hidden>
+        <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+        <aside class="sidebar" id="adminSidebar">
+            <div class="sidebar-top">
+                <div class="sidebar-brand">
+                    <img src="/logo.svg" alt="Logo">
+                    <div class="sidebar-brand-text">
+                        <strong>BOA Admin</strong>
+                        <span>Control Center</span>
+                    </div>
+                </div>
+                <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-label="Collapse sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-section="overview" data-label="Overview"><i class="fas fa-chart-pie"></i><span class="nav-label">Overview</span></button>
+                <button class="nav-item" data-section="users" data-label="Users"><i class="fas fa-users"></i><span class="nav-label">Users</span></button>
+                <button class="nav-item" data-section="accounts" data-label="Accounts"><i class="fas fa-wallet"></i><span class="nav-label">Accounts</span></button>
+                <button class="nav-item" data-section="transactions" data-label="Transactions"><i class="fas fa-list"></i><span class="nav-label">Transactions</span></button>
+                <button class="nav-item" data-section="messages" data-label="Restriction"><i class="fas fa-ban"></i><span class="nav-label">Restriction</span></button>
+                <button class="nav-item" data-section="invest" data-label="Investments"><i class="fas fa-chart-line"></i><span class="nav-label">Investments</span></button>
+                <button class="nav-item" data-section="security" data-label="Admin Security"><i class="fas fa-shield-alt"></i><span class="nav-label">Admin Security</span></button>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/index.html" class="btn btn-ghost sidebar-action" data-label="Open App"><i class="fas fa-external-link-alt"></i><span class="nav-label">Open App</span></a>
+                <button id="logoutBtn" class="btn btn-danger-ghost sidebar-action" data-label="Log Out"><i class="fas fa-sign-out-alt"></i><span class="nav-label">Log Out</span></button>
+            </div>
+        </aside>
+
+        <main class="main-panel">
+            <div id="adminBootLoader" class="admin-boot-loader" hidden>
+                <div class="admin-boot-spinner"></div>
+                <p>Loading dashboard...</p>
+            </div>
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button type="button" id="mobileMenuBtn" class="btn btn-secondary mobile-menu-btn" aria-label="Open menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2 id="sectionTitle">Overview</h2>
+                        <p id="sectionSubtitle">Live account summary and quick actions</p>
+                    </div>
+                </div>
+                <div class="topbar-actions">
+                    <div class="user-switcher">
+                        <label for="activeUserSelect">Editing user</label>
+                        <select id="activeUserSelect"></select>
+                    </div>
+                    <button id="resetBtn" class="btn btn-secondary">Reset Defaults</button>
+                    <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i> Save All Changes</button>
+                </div>
+            </header>
+
+            <section class="content-section active" data-section="overview">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span>Registered Users</span>
+                        <strong id="statUserCount">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Online Now</span>
+                        <strong id="statOnlineCount">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Total Balance</span>
+                        <strong id="statTotalBalance">$0.00</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Accounts</span>
+                        <strong id="statAccountCount">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Transactions</span>
+                        <strong id="statTransactionCount">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Investment Value</span>
+                        <strong id="statInvestValue">$0.00</strong>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Customer Login URL</h3>
+                    <p class="muted-note">Every customer you create signs in at this same website link using their own username and password.</p>
+                    <p><strong id="customerLoginUrl">-</strong></p>
+                </div>
+                <div class="card">
+                    <h3>Selected User</h3>
+                    <p><strong>Name:</strong> <span id="overviewName">-</span></p>
+                    <p><strong>Status:</strong> <span id="overviewStatus" class="session-badge offline">Offline</span></p>
+                    <p><strong>Last login:</strong> <span id="overviewLastLogin">Never</span></p>
+                    <p class="muted-note">Login credentials are hidden. Edit them in the <strong>Users</strong> section.</p>
+                    <p class="muted-note">Users show as <strong>Online</strong> while signed in and active. Status updates every 10 seconds.</p>
+                </div>
+            </section>
+
+            <section class="content-section" data-section="users">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h3>All Customers</h3>
+                            <p class="muted-note" id="userLimitLabel">0 of 10 users used</p>
+                        </div>
+                        <button id="createUserBtn" class="btn btn-secondary"><i class="fas fa-user-plus"></i> Create User</button>
+                    </div>
+                    <p class="muted-note">Select a customer below, then set their login, balances, and transfer message. Click <strong>Save All Changes</strong> when done.</p>
+                    <div id="usersList" class="user-grid"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Login Credentials</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Full Name</label>
+                            <input type="text" id="fullName" placeholder="Customer full name">
+                        </div>
+                        <div class="field">
+                            <label>Username (for sign in)</label>
+                            <input type="text" id="userProfileUsername" autocomplete="off" placeholder="Customer username">
+                        </div>
+                        <div class="field">
+                            <label>Password (for sign in)</label>
+                            <div class="password-field">
+                                <input type="text" id="userProfilePassword" autocomplete="off" placeholder="Customer password">
+                                <button type="button" class="password-toggle" data-target="userProfilePassword" aria-label="Hide password">
+                                    <i class="fas fa-eye-slash"></i>
+                                </button>
+                            </div>
+                            <p class="muted-note">Visible to admin only. Customers use this to log in on the banking app.</p>
+                        </div>
+                    </div>
+
+                    <hr class="section-divider">
+                    <h4>Dashboard Balances</h4>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Current Account ($)</label>
+                            <input type="number" id="currentAccountBalance" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div class="field">
+                            <label>Savings Account ($)</label>
+                            <input type="number" id="savingsAccountBalance" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div class="field">
+                            <label>Checking Account ($)</label>
+                            <input type="number" id="checkingAccountBalance" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <hr class="section-divider">
+                    <h4>Account Restriction</h4>
+                    <p class="muted-note">
+                        Full popup text (title, greeting, fee line, buttons) is edited on the
+                        <button type="button" id="openRestrictionEditorBtn" class="link-btn">Restriction</button> tab for this user.
+                    </p>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Settlement Fee ($)</label>
+                            <input type="number" id="usersSettlementFeeHint" step="0.01" readonly>
+                        </div>
+                        <div class="field full">
+                            <label>Body Message (preview)</label>
+                            <textarea id="usersRestrictionMessageHint" rows="2" readonly></textarea>
+                        </div>
+                    </div>
+
+                    <div class="delete-user-actions">
+                        <button id="deleteUserBtn" class="btn btn-danger btn-delete-user"><i class="fas fa-trash"></i> Delete User</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section" data-section="accounts">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Account Balances</h3>
+                        <button id="addAccountBtn" class="btn btn-secondary"><i class="fas fa-plus"></i> Add Account</button>
+                    </div>
+                    <div id="accountsList" class="stack-list"></div>
+                </div>
+            </section>
+
+            <section class="content-section" data-section="transactions">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Transaction History</h3>
+                        <button id="addTransactionBtn" class="btn btn-secondary"><i class="fas fa-plus"></i> Add Transaction</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Type</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section" data-section="messages">
+                <div class="card">
+                    <h3>Account Restricted Modal</h3>
+                    <p class="muted-note">Edit every line of the popup shown on Pay &amp; Transfer and Invest for the selected customer. Use <code>{name}</code> and <code>{fee}</code> placeholders where needed.</p>
+
+                    <div class="restriction-editor">
+                        <div class="form-grid">
+                            <div class="field">
+                                <label>Modal Title</label>
+                                <input type="text" id="restrictionTitle" placeholder="Account Restricted">
+                            </div>
+                            <div class="field">
+                                <label>Settlement Fee ($)</label>
+                                <input type="number" id="settlementFee" step="0.01" placeholder="25000">
+                            </div>
+                            <div class="field full">
+                                <label>Greeting (use {name} for customer name)</label>
+                                <input type="text" id="restrictionGreeting" placeholder="Dear {name},">
+                            </div>
+                            <div class="field full">
+                                <label>Body Message</label>
+                                <textarea id="restrictionMessage" rows="3" placeholder="Your account is temporarily restricted due to unresolved security issues."></textarea>
+                            </div>
+                            <div class="field full">
+                                <label>Fee Sentence (use {fee} for the amount)</label>
+                                <textarea id="restrictionFeeText" rows="2" placeholder="A settlement fee of {fee} is required to restore full access and remove the restriction, so normal account operations will be restored."></textarea>
+                            </div>
+                            <div class="field">
+                                <label>Primary Button</label>
+                                <input type="text" id="restrictionButton" placeholder="I Understand">
+                            </div>
+                            <div class="field">
+                                <label>Support Link</label>
+                                <input type="text" id="restrictionSupport" placeholder="Contact Support">
+                            </div>
+                        </div>
+
+                        <div class="restriction-preview" aria-live="polite">
+                            <div class="restriction-preview-label">Live preview</div>
+                            <div class="restriction-preview-card">
+                                <div class="restriction-preview-brand">BANK OF AMERICA</div>
+                                <div class="restriction-preview-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                <div class="restriction-preview-title" id="restrictionPreviewTitle">Account Restricted</div>
+                                <div class="restriction-preview-body" id="restrictionPreviewBody"></div>
+                                <button type="button" class="restriction-preview-btn" id="restrictionPreviewButton" disabled>I Understand</button>
+                                <div class="restriction-preview-link" id="restrictionPreviewSupport">Contact Support</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section" data-section="invest">
+                <div class="card">
+                    <h3>Investment Summary</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Total Value ($)</label>
+                            <input type="number" id="investTotalValue" step="0.01">
+                        </div>
+                        <div class="field">
+                            <label>Daily Change ($)</label>
+                            <input type="number" id="investChangeAmount" step="0.01">
+                        </div>
+                        <div class="field">
+                            <label>Change Percent (%)</label>
+                            <input type="number" id="investChangePercent" step="0.01">
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Holdings</h3>
+                        <button id="addHoldingBtn" class="btn btn-secondary"><i class="fas fa-plus"></i> Add Holding</button>
+                    </div>
+                    <div id="holdingsList" class="stack-list"></div>
+                </div>
+            </section>
+
+            <section class="content-section" data-section="security">
+                <div class="card">
+                    <h3>Admin Credentials</h3>
+                    <p class="muted-note" id="adminEnvNote" hidden>Admin login is managed by environment variables and cannot be changed here.</p>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Admin Username</label>
+                            <input type="text" id="adminUsername" readonly>
+                        </div>
+                        <div class="field">
+                            <label>Admin Password</label>
+                            <div class="password-field">
+                                <input type="password" id="adminPassword" placeholder="Leave blank to keep current password" readonly>
+                                <button type="button" class="password-toggle" data-target="adminPassword" aria-label="Show password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/client-secure.js"></script>
+    <script src="/admin/admin.js?v=16"></script>
+</body>
+</html>
