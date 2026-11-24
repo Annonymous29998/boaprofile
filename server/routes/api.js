@@ -38,7 +38,13 @@ router.post('/login', loginRateLimit, async (req, res) => {
         if (user) {
             await recordUserLogin(user.id);
             const token = signUserToken(user.id);
-            return res.json({ success: true, userId: user.id, token: token });
+            let config = null;
+            try {
+                config = await getPublicConfig(user.id);
+            } catch (configError) {
+                config = null;
+            }
+            return res.json({ success: true, userId: user.id, token: token, config: config });
         }
 
         return res.status(401).json({ success: false, message: 'Invalid username or password.' });

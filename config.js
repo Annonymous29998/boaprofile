@@ -5,6 +5,55 @@
     let eventSource = null;
     let fallbackTimer = null;
     let refreshTimer = null;
+    const CONFIG_CACHE_KEY = 'boaConfigCache';
+
+    function currentUserId() {
+        if (window.BoAAuth && typeof window.BoAAuth.getUserId === 'function') {
+            return window.BoAAuth.getUserId();
+        }
+        return sessionStorage.getItem('boaUserId');
+    }
+
+    function persistCache(config) {
+        const userId = currentUserId();
+        if (!userId || !config) {
+            return;
+        }
+        try {
+            sessionStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify({
+                userId: userId,
+                savedAt: Date.now(),
+                config: config
+            }));
+        } catch (error) {
+            // Ignore quota / private-mode failures
+        }
+    }
+
+    function readCache() {
+        try {
+            const raw = sessionStorage.getItem(CONFIG_CACHE_KEY);
+            if (!raw) {
+                return null;
+            }
+            const parsed = JSON.parse(raw);
+            const userId = currentUserId();
+            if (!parsed || parsed.userId !== userId || !parsed.config) {
+                return null;
+            }
+            return normalizeConfig(parsed.config);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function clearCache() {
+        try {
+            sessionStorage.removeItem(CONFIG_CACHE_KEY);
+        } catch (error) {
+            // Ignore
+        }
+    }
 
     function formatCurrency(amount) {
         return new Intl.NumberFormat('en-US', {
@@ -173,6 +222,7 @@
             }
             const data = await response.json();
             cachedConfig = normalizeConfig(data);
+            persistCache(cachedConfig);
             return cachedConfig;
         },
 
@@ -191,12 +241,42 @@
             });
             const data = await response.json();
             if (response.ok && data.success) {
+                if (data.userId) {
+                    sessionStorage.setItem('boaUserId', data.userId);
+                }
+                if (data.config) {
+                    cachedConfig = normalizeConfig(data.config);
+                    persistCache(cachedConfig);
+                }
                 return { success: true, userId: data.userId, token: data.token };
             }
             return { success: false };
         },
 
+        hydrateFromCache: function () {
+            if (cachedConfig) {
+                return true;
+            }
+            const stored = readCache();
+            if (!stored) {
+                return false;
+            }
+            cachedConfig = stored;
+            return true;
+        },
+
+        clearCache: clearCache,
+
         initPage: async function (renderFn) {
+            const hadCache = this.hydrateFromCache();
+            if (hadCache && typeof renderFn === 'function') {
+                try {
+                    renderFn();
+                } catch (error) {
+                    // Cached payload may be incomplete; network load still follows
+                }
+            }
+
             await this.load();
             if (typeof renderFn === 'function') {
                 renderFn();

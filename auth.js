@@ -68,6 +68,10 @@
             sessionStorage.removeItem(USER_ID_KEY);
             sessionStorage.removeItem(USER_TOKEN_KEY);
             sessionStorage.removeItem(ACTIVITY_KEY);
+            sessionStorage.removeItem('boaConfigCache');
+            if (window.BoAConfig && typeof window.BoAConfig.clearCache === 'function') {
+                window.BoAConfig.clearCache();
+            }
             if (idleTimer) {
                 clearTimeout(idleTimer);
                 idleTimer = null;
