@@ -56,13 +56,36 @@
         }
     }
 
+    function unknownReply(question) {
+        const typed = String(question || '').replace(/\s+/g, ' ').trim();
+        const snippet = typed.length > 72 ? typed.slice(0, 69) + '...' : typed;
+        const heard = snippet ? ' I heard: "' + snippet + '."' : '';
+        return "I'm sorry, I didn't quite get that." + heard +
+            " I can help with balances, finding a purchase, paying a bill, transfers, deposits, or alerts. Try asking another way, or tap a suggestion below.";
+    }
+
     function answerErica(question) {
         const q = String(question || '').toLowerCase();
+        if (!q.trim() || q.length < 2) {
+            return unknownReply(question);
+        }
+        if (/^(hi|hello|hey|good morning|good afternoon)\b/.test(q)) {
+            return 'Hi ' + customerName() + '. I\'m Erica. You can ask me for a balance, a recent purchase, a bill payment, or a transfer.';
+        }
         if (/balance|how much|available/.test(q)) {
             return 'Here are the available balances I see:\n\n' + balancesText();
         }
         if (/transaction|purchase|spend|find/.test(q)) {
             return recentPurchaseText() + '\n\nYou can also tap VIEW on an account to see activity.';
+        }
+        if (/deposit|check/.test(q)) {
+            return 'To deposit a check, open Deposit Checks on the bottom of the app. Photograph the front and back, choose an account, then enter the amount.';
+        }
+        if (/invest|merrill|stock|holding/.test(q)) {
+            return 'Your Merrill holdings are on the Invest tab. Open Invest to see total account value, trade, quotes, and research.';
+        }
+        if (/statement|document|inbox|mail/.test(q)) {
+            return 'Statements and alerts are in Inbox at the top of the app. Open Mailbox for messages, or Alerts for account activity.';
         }
         if (/bill|pay/.test(q)) {
             return 'You can pay a bill from Pay & Transfer > Bill Pay. I can take you there from the bottom of the app.';
@@ -76,7 +99,10 @@
         if (/reward|gold|preferred/.test(q)) {
             return 'You are in Preferred Rewards Gold on this profile. Open My Rewards for Gold benefits.';
         }
-        return 'I can help with balances, recent purchases, bills, alerts, and transfers — the same things you can ask Erica® in the Bank of America app. Try one of the suggestions, or type a question.';
+        if (/help|what can you|what do you/.test(q)) {
+            return 'I can check balances, find a purchase, help you pay a bill, point you to transfers, deposits, Invest, or alerts. Ask in your own words, or tap a suggestion.';
+        }
+        return unknownReply(question);
     }
 
     function ensureOverlay() {
@@ -288,6 +314,11 @@
                 openExtra('rewards');
             });
         }
+        document.querySelectorAll('[data-open-extra]').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                openExtra(chip.getAttribute('data-open-extra'));
+            });
+        });
     }
 
     if (document.readyState === 'loading') {

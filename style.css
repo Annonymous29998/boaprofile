@@ -1536,10 +1536,42 @@ body.boa-menu-open {
     overflow: hidden;
 }
 
+.accounts-hello {
+    margin: 0 0 16px;
+}
+.accounts-hello h1 {
+    font-size: 26px;
+    font-weight: 300;
+    color: #012169;
+    margin: 0 0 4px;
+}
+.accounts-shortcuts {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+.accounts-chip {
+    border: none;
+    background: #e8eef4;
+    color: #012169;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 16px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
 .accounts-header {
     background-color: #E31837;
     padding: 12px 16px;
     color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+}
+.accounts-header-total {
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .accounts-header.merrill {
@@ -1863,11 +1895,11 @@ body.account-detail-open {
 
 /* Pay & Transfer Styles */
 .page-title {
-    font-size: 22px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 25px;
-    text-align: center;
+    font-size: 26px;
+    font-weight: 300;
+    color: #012169;
+    margin-bottom: 18px;
+    text-align: left;
 }
 
 .pay-options-grid {
@@ -1880,14 +1912,15 @@ body.account-detail-open {
 .pay-option-card {
     background-color: white;
     border-radius: 12px;
-    padding: 20px;
+    padding: 18px 12px 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     cursor: pointer;
     transition: transform 0.1s;
+    min-height: 132px;
 }
 
 .pay-option-card:active {
@@ -1910,8 +1943,58 @@ body.account-detail-open {
 }
 
 .pay-icon-container.blue-bg {
-    background-color: #0065B3; /* BofA Blue */
+    background-color: #0065B3;
     color: white;
+}
+.pay-icon-container.red-bg {
+    background-color: #E31837;
+    color: white;
+}
+.pay-icon-container.gray-bg {
+    background-color: #012169;
+    color: white;
+}
+.recent-transactions-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+.recent-transactions-section h3 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    color: #012169;
+}
+.zelle-hub-actions {
+    display: flex;
+    gap: 10px;
+    margin: 16px 0;
+}
+.zelle-hub-btn {
+    flex: 1;
+    border: 1px solid #d9e3ea;
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 8px;
+    color: #012169;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+}
+.zelle-hub-btn i {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 6px;
+    color: #6d1ed4;
+}
+.deposit-endorse {
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #333;
+    margin-bottom: 16px;
 }
 
 .pay-icon-container i {

@@ -6,7 +6,7 @@
     <title>Bank of America - Pay & Transfer</title>
     <link rel="icon" href="/logo.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=boa20261124">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
 </head>
@@ -36,50 +36,38 @@
             </div>
         </header>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <div class="tab" onclick="window.location.href='dashboard.html'">Accounts</div>
-            <div class="tab active">Pay & Transfer</div>
-        </div>
-
-        <!-- Main Content -->
         <main class="main-content">
             <h1 class="page-title">Pay & Transfer</h1>
             
-            <!-- Pay Options Grid -->
             <div class="pay-options-grid">
-                <div class="pay-option-card" id="zelleOption">
-                    <div class="pay-icon-container zelle-bg">
-                        <svg viewBox="0 0 100 40" style="width: 50px; height: auto; fill: white;">
-                            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="28" fill="white" letter-spacing="-1">Zelle</text>
-                            <line x1="50" y1="5" x2="50" y2="35" stroke="white" stroke-width="2" transform="rotate(15 50 20)" style="opacity: 0.3;" />
-                        </svg>
-                    </div>
-                    <span class="pay-option-text">Send money with Zelle®</span>
-                </div>
                 <div class="pay-option-card" id="transferOption">
                     <div class="pay-icon-container blue-bg">
                         <i class="fas fa-exchange-alt"></i>
                     </div>
-                    <span class="pay-option-text">Transfer between accounts</span>
+                    <span class="pay-option-text">Transfer between my accounts</span>
+                </div>
+                <div class="pay-option-card" id="zelleOption">
+                    <div class="pay-icon-container zelle-bg">
+                        <span class="zelle-text">Zelle</span>
+                    </div>
+                    <span class="pay-option-text">Zelle® send or receive</span>
                 </div>
                 <div class="pay-option-card" id="billPayOption">
                     <div class="pay-icon-container red-bg">
                         <i class="fas fa-file-invoice-dollar"></i>
                     </div>
-                    <span class="pay-option-text">Bill Pay</span>
+                    <span class="pay-option-text">Pay Bills</span>
                 </div>
                 <div class="pay-option-card" id="wireOption">
                     <div class="pay-icon-container gray-bg">
                         <i class="fas fa-globe"></i>
                     </div>
-                    <span class="pay-option-text">Wire Money</span>
+                    <span class="pay-option-text">Wire</span>
                 </div>
             </div>
 
-            <!-- Recent Transactions Section -->
             <div class="recent-transactions-section">
-                <h3>Recent Transactions</h3>
+                <h3>Activity</h3>
                 <div class="transaction-list" id="transaction-list-container">
                     <!-- Transactions will be populated by JavaScript -->
                 </div>
@@ -113,6 +101,25 @@
                 <span>Invest</span>
             </div>
         </nav>
+
+        <div id="zelleHubOverlay" class="invest-info-overlay" hidden aria-hidden="true">
+            <div class="invest-info-sheet">
+                <header class="invest-info-header">
+                    <button type="button" id="zelleHubClose">Close</button>
+                    <h2>Zelle®</h2>
+                    <span></span>
+                </header>
+                <div class="invest-info-body">
+                    <p>Send or receive money with Zelle®. Only send money to people you know and trust.</p>
+                    <div class="zelle-hub-actions">
+                        <button type="button" class="zelle-hub-btn" id="zelleSendBtn"><i class="fas fa-paper-plane"></i>Send</button>
+                        <button type="button" class="zelle-hub-btn" id="zelleRequestBtn"><i class="fas fa-hand-holding-usd"></i>Request</button>
+                        <button type="button" class="zelle-hub-btn" id="zelleSplitBtn"><i class="fas fa-users"></i>Split</button>
+                    </div>
+                    <p id="zelleHubNote" class="pay-flow-note" hidden></p>
+                </div>
+            </div>
+        </div>
 
         <div id="payFlowOverlay" class="pay-flow-overlay" style="display: none;" aria-hidden="true">
             <header class="pay-flow-header">
@@ -172,7 +179,7 @@
     </div>
 
     <script src="client-secure.js"></script>
-    <script src="config.js"></script>
+    <script src="config.js?v=boa20261124"></script>
     <script src="auth.js"></script>
     <script src="inbox.js"></script>
     <script src="products.js"></script>
@@ -934,10 +941,57 @@
         });
         payFlowCancel.addEventListener('click', closePayFlow);
 
+        var zelleHubOverlay = document.getElementById('zelleHubOverlay');
+        function openZelleHub() {
+            if (!zelleHubOverlay) return;
+            var note = document.getElementById('zelleHubNote');
+            if (note) {
+                note.hidden = true;
+                note.textContent = '';
+            }
+            zelleHubOverlay.hidden = false;
+            zelleHubOverlay.classList.add('is-open');
+            zelleHubOverlay.setAttribute('aria-hidden', 'false');
+        }
+        function closeZelleHub() {
+            if (!zelleHubOverlay) return;
+            zelleHubOverlay.classList.remove('is-open');
+            zelleHubOverlay.hidden = true;
+            zelleHubOverlay.setAttribute('aria-hidden', 'true');
+        }
         document.getElementById('zelleOption').addEventListener('click', function(e) {
             e.preventDefault();
-            openPayFlow('zelle');
+            openZelleHub();
         });
+        var zelleHubClose = document.getElementById('zelleHubClose');
+        if (zelleHubClose) zelleHubClose.addEventListener('click', closeZelleHub);
+        var zelleSendBtn = document.getElementById('zelleSendBtn');
+        if (zelleSendBtn) {
+            zelleSendBtn.addEventListener('click', function () {
+                closeZelleHub();
+                openPayFlow('zelle');
+            });
+        }
+        var zelleRequestBtn = document.getElementById('zelleRequestBtn');
+        if (zelleRequestBtn) {
+            zelleRequestBtn.addEventListener('click', function () {
+                var note = document.getElementById('zelleHubNote');
+                if (note) {
+                    note.hidden = false;
+                    note.textContent = 'Request money from people you know. They get a notification and can pay you with Zelle®.';
+                }
+            });
+        }
+        var zelleSplitBtn = document.getElementById('zelleSplitBtn');
+        if (zelleSplitBtn) {
+            zelleSplitBtn.addEventListener('click', function () {
+                var note = document.getElementById('zelleHubNote');
+                if (note) {
+                    note.hidden = false;
+                    note.textContent = 'Split a purchase with friends. Each person can pay their share with Zelle®.';
+                }
+            });
+        }
         document.getElementById('transferOption').addEventListener('click', function(e) {
             e.preventDefault();
             openPayFlow('transfer');

