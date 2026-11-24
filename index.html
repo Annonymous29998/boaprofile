@@ -85,7 +85,7 @@
     </div>
     <div id="customModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-title">Sign In Error</div>
+            <div class="modal-title" id="modalTitle">Sign In Error</div>
             <div class="modal-message" id="modalMessage">Invalid username or password. Please try again.</div>
             <button class="modal-btn" onclick="closeModal()">OK</button>
         </div>
@@ -94,7 +94,8 @@
     <script src="config.js"></script>
     <script src="auth.js"></script>
     <script>
-        function showModal(message) {
+        function showModal(message, title) {
+            document.getElementById('modalTitle').innerText = title || 'Sign In Error';
             document.getElementById('modalMessage').innerText = message;
             document.getElementById('customModal').style.display = 'flex';
         }
@@ -139,6 +140,10 @@
             if (savedUsername) {
                 document.getElementById('username').value = savedUsername;
                 document.getElementById('remember-me').checked = true;
+            }
+            if (window.BoAAuth && BoAAuth.consumeSessionExpired()) {
+                showLogin();
+                showModal('Your session expired. Please log in again.', 'Session expired');
             }
         });
 

@@ -118,6 +118,42 @@ async function refreshUserSessions() {
     }
 }
 
+const ADMIN_IDLE_MS = 10 * 60 * 1000;
+let adminIdleTimer = null;
+
+function markAdminActivity() {
+    sessionStorage.setItem('boaAdminLastActivityAt', String(Date.now()));
+    scheduleAdminIdleCheck();
+}
+
+function expireAdminSession() {
+    setToken(null);
+    stopSessionRefresh();
+    showLogin();
+    showToast('Your session expired. Please log in again.', true);
+}
+
+function scheduleAdminIdleCheck() {
+    if (adminIdleTimer) {
+        clearTimeout(adminIdleTimer);
+    }
+    const last = Number(sessionStorage.getItem('boaAdminLastActivityAt') || Date.now());
+    const remaining = ADMIN_IDLE_MS - (Date.now() - last);
+    if (remaining <= 0) {
+        expireAdminSession();
+        return;
+    }
+    adminIdleTimer = setTimeout(expireAdminSession, remaining);
+}
+
+function startAdminIdleWatch() {
+    markAdminActivity();
+    ['click', 'keydown', 'touchstart', 'scroll', 'mousemove'].forEach(function (eventName) {
+        document.addEventListener(eventName, markAdminActivity, { passive: true });
+    });
+    scheduleAdminIdleCheck();
+}
+
 function startSessionRefresh() {
     if (sessionRefreshTimer) {
         clearInterval(sessionRefreshTimer);
@@ -127,6 +163,7 @@ function startSessionRefresh() {
             // Ignore background refresh errors
         });
     }, 10000);
+    startAdminIdleWatch();
 }
 
 function stopSessionRefresh() {

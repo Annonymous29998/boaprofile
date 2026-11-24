@@ -228,12 +228,95 @@
                                 '<p class="account-name">' + account.name + '</p>' +
                                 '<h1 class="account-balance">' + BoAConfig.formatCurrency(account.balance) + '</h1>' +
                             '</div>' +
-                            '<button class="view-btn">VIEW</button>' +
+                            '<button type="button" class="view-btn" data-account-index="' + index + '">VIEW</button>' +
                         '</div>' +
                         divider
                     );
                 }).join('');
+
+                accountList.querySelectorAll('.view-btn').forEach(function (button) {
+                    button.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        BoAConfig.openAccountDetail(Number(button.getAttribute('data-account-index')));
+                    });
+                });
             }
+        },
+
+        openAccountDetail: function (index) {
+            const config = this.get();
+            const account = (config.accounts || [])[index];
+            const overlay = document.getElementById('accountDetailOverlay');
+            if (!account || !overlay) {
+                return;
+            }
+
+            function lastFour(name) {
+                let total = 0;
+                String(name || '').split('').forEach(function (ch) {
+                    total = (total * 33 + ch.charCodeAt(0)) % 9000;
+                });
+                return String(1000 + total).slice(-4);
+            }
+
+            const nameEl = document.getElementById('accountDetailName');
+            const balanceEl = document.getElementById('accountDetailBalance');
+            const numberEl = document.getElementById('accountDetailNumber');
+            const listEl = document.getElementById('accountDetailActivity');
+            if (nameEl) nameEl.textContent = account.name;
+            if (balanceEl) balanceEl.textContent = this.formatCurrency(account.balance);
+            if (numberEl) numberEl.textContent = 'Account •••• ' + lastFour(account.name);
+
+            const txs = (config.transactions || []).filter(function (tx) {
+                return !tx.fromAccount && !tx.toAccount
+                    || tx.fromAccount === account.name
+                    || tx.toAccount === account.name;
+            }).slice(0, 25);
+
+            if (listEl) {
+                if (!txs.length) {
+                    listEl.innerHTML = '<p class="account-detail-empty">No recent activity for this account.</p>';
+                } else {
+                    listEl.innerHTML = txs.map(function (tx) {
+                        const formattedAmount = BoAConfig.formatCurrency(Math.abs(tx.amount));
+                        const sign = tx.type === 'positive' ? '+' : '-';
+                        let status = '';
+                        if (tx.status === 'pending') status = '<p class="transaction-status pending">Pending</p>';
+                        if (tx.status === 'cancelled') status = '<p class="transaction-status cancelled">Cancelled</p>';
+                        return (
+                            '<div class="transaction-item">' +
+                                '<div class="transaction-date">' +
+                                    '<span class="month">' + tx.month + '</span>' +
+                                    '<span class="day">' + tx.day + '</span>' +
+                                    '<span class="year">' + tx.year + '</span>' +
+                                '</div>' +
+                                '<div class="transaction-details">' +
+                                    '<p class="transaction-desc">' + tx.desc + '</p>' +
+                                    '<p class="transaction-sub">' + tx.sub + '</p>' +
+                                    status +
+                                '</div>' +
+                                '<div class="transaction-amount ' + tx.type + '">' + sign + formattedAmount + '</div>' +
+                            '</div>'
+                        );
+                    }).join('');
+                }
+            }
+
+            overlay.classList.add('is-open');
+            overlay.setAttribute('aria-hidden', 'false');
+            overlay.scrollTop = 0;
+            document.body.classList.add('account-detail-open');
+        },
+
+        closeAccountDetail: function () {
+            const overlay = document.getElementById('accountDetailOverlay');
+            if (!overlay) {
+                return;
+            }
+            overlay.classList.remove('is-open');
+            overlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('account-detail-open');
         },
 
         renderDepositAccounts: function () {

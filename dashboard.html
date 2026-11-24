@@ -127,17 +127,77 @@
                 <span>Invest</span>
             </div>
         </nav>
+
+        <div id="accountDetailOverlay" class="account-detail-overlay" aria-hidden="true">
+            <header class="account-detail-header">
+                <button type="button" class="account-detail-back" id="accountDetailBack"><i class="fas fa-chevron-left"></i> Accounts</button>
+                <h2 id="accountDetailName">Account</h2>
+            </header>
+            <div class="account-detail-hero">
+                <p class="account-detail-label">Available balance</p>
+                <p class="account-detail-balance" id="accountDetailBalance">$0.00</p>
+                <p class="account-detail-number" id="accountDetailNumber">Account</p>
+            </div>
+            <div class="account-detail-actions">
+                <button type="button" class="account-detail-action" id="accountDetailTransfer">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Transfer</span>
+                </button>
+                <button type="button" class="account-detail-action" id="accountDetailPay">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Pay bills</span>
+                </button>
+                <button type="button" class="account-detail-action" id="accountDetailInbox">
+                    <i class="far fa-file-alt"></i>
+                    <span>Statements</span>
+                </button>
+            </div>
+            <div class="account-detail-activity">
+                <h3>Activity</h3>
+                <div class="transaction-list" id="accountDetailActivity"></div>
+            </div>
+        </div>
     </div>
 
     <script src="client-secure.js"></script>
     <script src="config.js"></script>
     <script src="auth.js"></script>
+    <script src="inbox.js"></script>
+    <script src="products.js"></script>
+    <script src="dashboard-extras.js"></script>
+    <script src="menu.js"></script>
     <script>
         BoAAuth.requireAuth();
 
         BoAConfig.initPage(function () {
             BoAConfig.renderDashboard();
         });
+
+        var accountDetailBack = document.getElementById('accountDetailBack');
+        if (accountDetailBack) {
+            accountDetailBack.addEventListener('click', function () {
+                BoAConfig.closeAccountDetail();
+            });
+        }
+        var accountDetailTransfer = document.getElementById('accountDetailTransfer');
+        if (accountDetailTransfer) {
+            accountDetailTransfer.addEventListener('click', function () {
+                window.location.href = 'pay_transfer.html';
+            });
+        }
+        var accountDetailPay = document.getElementById('accountDetailPay');
+        if (accountDetailPay) {
+            accountDetailPay.addEventListener('click', function () {
+                window.location.href = 'pay_transfer.html';
+            });
+        }
+        var accountDetailInbox = document.getElementById('accountDetailInbox');
+        if (accountDetailInbox) {
+            accountDetailInbox.addEventListener('click', function () {
+                var inboxBtn = document.querySelector('.nav-right .nav-item');
+                if (inboxBtn) inboxBtn.click();
+            });
+        }
 
         document.getElementById('logout-btn').addEventListener('click', function() {
             BoAAuth.logout();
