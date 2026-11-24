@@ -7,7 +7,8 @@ const {
     validateUserLogin,
     validateAdminLogin,
     recordUserLogin,
-    enrichUserSession
+    enrichUserSession,
+    completeCustomerTransfer
 } = require('../database');
 const { getMaxUsers, USER_LIMIT_MESSAGE } = require('../constants');
 const { signAdminToken, signUserToken, requireAdmin, requireUser, getJwtSecret } = require('../middleware/auth');
@@ -113,6 +114,35 @@ router.get('/transactions', requireUser, async (req, res) => {
         res.json(config.transactions || []);
     } catch (error) {
         return sendSafeError(res, 500, 'Unable to load transactions.', error);
+    }
+});
+
+router.post('/transfer', requireUser, async (req, res) => {
+    try {
+        const result = await completeCustomerTransfer(req.user.userId, req.body || {});
+        if (result.retry) {
+            return res.status(409).json({
+                success: false,
+                retry: true,
+                message: result.message || 'Something went wrong. Please try again.'
+            });
+        }
+        if (!result.success) {
+            return res.status(403).json({
+                success: false,
+                blocked: true,
+                message: 'This transfer cannot be completed.'
+            });
+        }
+        return res.json(result);
+    } catch (error) {
+        if (error.message === 'User not found.') {
+            return res.status(404).json({ error: 'Account not found.' });
+        }
+        if (error.statusCode === 400) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+        return sendSafeError(res, 500, 'Unable to complete this transfer.', error);
     }
 });
 
