@@ -1355,6 +1355,45 @@ body.boa-menu-open {
     border-bottom: 3px solid #E31837;
 }
 
+.home-panel[hidden] {
+    display: none !important;
+}
+
+.snapshot-card {
+    margin-top: 16px;
+    padding: 18px;
+}
+
+.snapshot-label {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.snapshot-card h2 {
+    margin: 6px 0 4px;
+    font-size: 26px;
+    color: #222;
+}
+
+.snapshot-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.snapshot-btn {
+    flex: 1;
+    border: none;
+    background: #eef3f6;
+    color: #00295F;
+    font-weight: 700;
+    font-size: 12px;
+    border-radius: 20px;
+    padding: 10px 8px;
+    cursor: pointer;
+}
+
 /* Search Bar */
 .search-container {
     display: flex;
@@ -1451,8 +1490,8 @@ body.boa-menu-open {
 
 .gold-member {
     font-size: 13px;
-    color: #666;
-    font-weight: 400;
+    color: #8a6d3b;
+    font-weight: 600;
 }
 
 .row-content h3 {
@@ -1491,21 +1530,26 @@ body.boa-menu-open {
 /* Accounts Section */
 .accounts-section {
     background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
     overflow: hidden;
 }
 
 .accounts-header {
-    background-color: #b9122c; /* Darker Red */
-    padding: 15px 20px;
+    background-color: #E31837;
+    padding: 12px 16px;
     color: white;
 }
 
+.accounts-header.merrill {
+    background-color: #012169;
+}
+
 .accounts-header h2 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
+    letter-spacing: 0.01em;
 }
 
 .account-list {
@@ -1515,31 +1559,97 @@ body.boa-menu-open {
 .account-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 20px;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.account-item:last-child {
+    border-bottom: none;
 }
 
 .account-name {
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #012169;
+    margin: 0 0 4px;
+}
+
+.account-mask {
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: #777;
+}
+
+.account-balance-label {
+    margin: 0 0 2px;
+    font-size: 11px;
     color: #666;
-    margin-bottom: 5px;
 }
 
 .account-balance {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
+    font-size: 26px;
+    font-weight: 300;
+    color: #222;
+    margin: 0;
+}
+
+.account-day-change {
+    margin: 4px 0 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #008a00;
+}
+
+.account-day-change.negative {
+    color: #e31837;
 }
 
 .view-btn {
-    background-color: #eef3f6;
-    color: #00295F;
+    background-color: #e8eef4;
+    color: #012169;
     border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.04em;
     cursor: pointer;
+    flex-shrink: 0;
+}
+
+.accounts-tools {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.accounts-tool {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border: none;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+    color: #0065B3;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.accounts-tool:last-child {
+    border-bottom: none;
+}
+
+.accounts-tool i {
+    color: #99a;
+    font-size: 12px;
 }
 
 .account-detail-overlay {
@@ -1613,7 +1723,7 @@ body.boa-menu-open {
 .account-detail-actions {
     display: flex;
     gap: 8px;
-    padding: 14px 16px;
+    padding: 14px 12px;
     background: #fff;
     margin-bottom: 8px;
 }
@@ -2179,14 +2289,37 @@ body.account-detail-open {
 
 
 /* Invest Page Styles */
+.invest-page {
+    padding-top: 16px;
+}
+.invest-page-title {
+    margin: 4px 0 4px;
+    font-size: 26px;
+    font-weight: 300;
+    color: #012169;
+}
+.invest-brand {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #012169;
+}
 .invest-summary {
     background-color: white;
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 18px 20px 16px;
+    margin: 0 -20px 16px;
     border-bottom: 1px solid #e0e0e0;
 }
+.invest-account-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #012169;
+    margin-bottom: 10px;
+}
 .invest-total-label {
-    font-size: 14px;
+    font-size: 12px;
     color: #555;
     margin-bottom: 5px;
 }
@@ -2198,49 +2331,143 @@ body.account-detail-open {
 }
 .invest-change {
     font-size: 14px;
-    color: #008a00; /* Green */
+    color: #008a00;
     font-weight: bold;
+}
+.invest-change.negative {
+    color: #e31837;
+}
+.invest-account-meta {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #666;
 }
 .invest-actions {
     display: flex;
     justify-content: space-between;
-    padding: 0 15px 20px 15px;
-    background-color: #f4f4f4;
+    gap: 8px;
+    padding: 0 0 16px;
+    background-color: transparent;
 }
 .invest-btn {
     flex: 1;
     background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 10px;
-    margin: 0 5px;
+    border: 1px solid #d9e3ea;
+    border-radius: 10px;
+    padding: 12px 4px;
+    margin: 0;
     text-align: center;
-    font-weight: bold;
-    color: #0065B3;
+    font-weight: 700;
+    font-size: 11px;
+    color: #00295F;
     cursor: pointer;
+}
+.invest-btn i {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 6px;
+    color: #012169;
 }
 .invest-btn:first-child { margin-left: 0; }
 .invest-btn:last-child { margin-right: 0; }
+.market-list {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+.market-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    background: #fff;
+}
+.market-row:last-child {
+    border-bottom: none;
+}
+.market-row .up { color: #008a00; font-weight: 700; }
+.market-row .down { color: #e31837; font-weight: 700; }
+.invest-disclaimer {
+    font-size: 11px;
+    line-height: 1.45;
+    color: #888;
+    margin: 0 0 20px;
+}
+.invest-info-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 190;
+    background: #f4f4f4;
+}
+.invest-info-overlay.is-open {
+    display: flex;
+}
+.invest-info-overlay[hidden] {
+    display: none !important;
+}
+.invest-info-sheet {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.invest-info-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 12px 12px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+}
+.invest-info-header h2 {
+    margin: 0;
+    font-size: 17px;
+    color: #012169;
+}
+.invest-info-header button {
+    border: none;
+    background: transparent;
+    color: #0065B3;
+    font-weight: 600;
+    cursor: pointer;
+}
+.invest-info-body {
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+}
+.invest-info-body p {
+    margin: 0 0 12px;
+}
 
 .holdings-list {
     background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
 }
 .holding-item {
-    padding: 15px 20px;
+    padding: 15px 16px;
     border-bottom: 1px solid #eee;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 .holding-name {
-    font-weight: bold;
-    font-size: 16px;
-    color: #333;
-}
-.holding-symbol {
     font-size: 12px;
     color: #666;
+    font-weight: 400;
     margin-top: 2px;
+}
+.holding-symbol {
+    font-size: 15px;
+    font-weight: 700;
+    color: #012169;
+    margin-top: 0;
 }
 .holding-value {
     text-align: right;

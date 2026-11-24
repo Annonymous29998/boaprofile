@@ -845,6 +845,10 @@
                         showTransferRetryModal();
                         return;
                     }
+                    if (BoAConfig.isJimmyChiang()) {
+                        showTransferRetryModal();
+                        return;
+                    }
                     showRestrictionModal();
                 }).catch(function () {
                     showTransferRetryModal();

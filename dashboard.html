@@ -38,8 +38,8 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <div class="tab active">Accounts</div>
-            <div class="tab">Dashboard</div>
+            <div class="tab active" data-home-tab="accounts" id="accountsTab">Accounts</div>
+            <div class="tab" data-home-tab="dashboard" id="dashboardTab">Dashboard</div>
         </div>
 
         <!-- Main Content -->
@@ -56,48 +56,90 @@
                 </div>
             </div>
 
-            <!-- Welcome Card -->
-            <div class="card welcome-card">
-                <div class="card-row">
-                    <div class="row-content">
+            <section class="home-panel" id="accountsPanel">
+                <div class="accounts-section" id="bankAccountsGroup">
+                    <div class="accounts-header">
+                        <h2>Bank of America</h2>
+                    </div>
+                    <div class="account-list" id="accountList"></div>
+                </div>
+                <div class="accounts-section" id="cardAccountsGroup" hidden>
+                    <div class="accounts-header">
+                        <h2>Credit cards</h2>
+                    </div>
+                    <div class="account-list" id="cardAccountList"></div>
+                </div>
+                <div class="accounts-section" id="loanAccountsGroup" hidden>
+                    <div class="accounts-header">
+                        <h2>Loans</h2>
+                    </div>
+                    <div class="account-list" id="loanAccountList"></div>
+                </div>
+                <div class="accounts-section" id="merrillGroup" hidden>
+                    <div class="accounts-header merrill">
+                        <h2>Merrill</h2>
+                    </div>
+                    <div class="account-list" id="merrillAccountList"></div>
+                </div>
+                <div class="accounts-tools">
+                    <button type="button" class="accounts-tool" id="openAccountTool">
+                        <span>Open an account</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button type="button" class="accounts-tool" id="organizeAccountsTool">
+                        <span>Organize accounts</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button type="button" class="accounts-tool" id="linkAccountsTool">
+                        <span>Add external accounts</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <section class="home-panel" id="dashboardPanel" hidden>
+                <div class="card welcome-card">
+                    <div class="card-row">
+                        <div class="row-content">
+                            <div>
+                                <h2 id="userGreeting">Hello</h2>
+                                <p class="gold-member">Preferred Rewards Gold Member</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="card-row">
+                        <div class="row-content with-icon">
+                        <div class="life-plan-icon-container">
+                            <i class="fas fa-compass item-icon"></i>
+                        </div>
                         <div>
-                            <h2 id="userGreeting">Hello</h2>
-                            <p class="gold-member">Preferred Rewards Gold Member</p>
+                            <h3>Bank of America Life Plan®</h3>
+                            <p class="sub-text">Your next steps are ready. Let's go!</p>
                         </div>
                     </div>
-                    <i class="fas fa-chevron-right arrow-icon"></i>
-                </div>
-                <div class="divider"></div>
-                <div class="card-row">
-                    <div class="row-content with-icon">
-                    <div class="life-plan-icon-container">
-                        <i class="fas fa-compass item-icon"></i>
+                        <i class="fas fa-chevron-right arrow-icon"></i>
                     </div>
-                    <div>
-                        <h3>Bank of America Life Plan®</h3>
-                        <p class="sub-text">Your next steps are ready. Let's go!</p>
+                    <div class="divider"></div>
+                    <div class="card-row">
+                        <div class="row-content">
+                            <h3>My Rewards</h3>
+                        </div>
+                        <i class="fas fa-chevron-right arrow-icon"></i>
                     </div>
                 </div>
-                    <i class="fas fa-chevron-right arrow-icon"></i>
-                </div>
-                <div class="divider"></div>
-                <div class="card-row">
-                    <div class="row-content">
-                        <h3>My Rewards</h3>
-                    </div>
-                    <i class="fas fa-chevron-right arrow-icon"></i>
-                </div>
-            </div>
 
-            <!-- Accounts Section -->
-            <div class="accounts-section">
-                <div class="accounts-header">
-                    <h2>Bank of America</h2>
+                <div class="card snapshot-card">
+                    <p class="snapshot-label">Your snapshot</p>
+                    <h2 id="dashboardTotalBalance">$0.00</h2>
+                    <p class="sub-text">Combined Bank of America and Merrill balances</p>
+                    <div class="snapshot-actions">
+                        <button type="button" class="snapshot-btn" id="snapshotPay">Pay &amp; Transfer</button>
+                        <button type="button" class="snapshot-btn" id="snapshotAccounts">View accounts</button>
+                    </div>
                 </div>
-                <div class="account-list" id="accountList">
-                    <!-- Accounts populated from config -->
-                </div>
-            </div>
+            </section>
         </main>
 
         <!-- Bottom Navigation -->
@@ -134,7 +176,7 @@
                 <h2 id="accountDetailName">Account</h2>
             </header>
             <div class="account-detail-hero">
-                <p class="account-detail-label">Available balance</p>
+                <p class="account-detail-label" id="accountDetailLabel">Available balance</p>
                 <p class="account-detail-balance" id="accountDetailBalance">$0.00</p>
                 <p class="account-detail-number" id="accountDetailNumber">Account</p>
             </div>
@@ -145,7 +187,11 @@
                 </button>
                 <button type="button" class="account-detail-action" id="accountDetailPay">
                     <i class="fas fa-file-invoice-dollar"></i>
-                    <span>Pay bills</span>
+                    <span>Bill pay</span>
+                </button>
+                <button type="button" class="account-detail-action" id="accountDetailZelle">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Zelle<sup>®</sup></span>
                 </button>
                 <button type="button" class="account-detail-action" id="accountDetailInbox">
                     <i class="far fa-file-alt"></i>
@@ -155,6 +201,17 @@
             <div class="account-detail-activity">
                 <h3>Activity</h3>
                 <div class="transaction-list" id="accountDetailActivity"></div>
+            </div>
+        </div>
+
+        <div id="accountsInfoOverlay" class="invest-info-overlay" hidden aria-hidden="true">
+            <div class="invest-info-sheet">
+                <header class="invest-info-header">
+                    <button type="button" id="accountsInfoClose">Close</button>
+                    <h2 id="accountsInfoTitle">Accounts</h2>
+                    <span></span>
+                </header>
+                <div class="invest-info-body" id="accountsInfoBody"></div>
             </div>
         </div>
     </div>
@@ -173,6 +230,36 @@
             BoAConfig.renderDashboard();
         });
 
+        function showHomeTab(tabName) {
+            var accountsTab = document.getElementById('accountsTab');
+            var dashboardTab = document.getElementById('dashboardTab');
+            var accountsPanel = document.getElementById('accountsPanel');
+            var dashboardPanel = document.getElementById('dashboardPanel');
+            var isDashboard = tabName === 'dashboard';
+            if (accountsTab) accountsTab.classList.toggle('active', !isDashboard);
+            if (dashboardTab) dashboardTab.classList.toggle('active', isDashboard);
+            if (accountsPanel) accountsPanel.hidden = isDashboard;
+            if (dashboardPanel) dashboardPanel.hidden = !isDashboard;
+        }
+
+        document.querySelectorAll('.tab[data-home-tab]').forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                showHomeTab(tab.getAttribute('data-home-tab'));
+            });
+        });
+        var snapshotPay = document.getElementById('snapshotPay');
+        if (snapshotPay) {
+            snapshotPay.addEventListener('click', function () {
+                window.location.href = 'pay_transfer.html';
+            });
+        }
+        var snapshotAccounts = document.getElementById('snapshotAccounts');
+        if (snapshotAccounts) {
+            snapshotAccounts.addEventListener('click', function () {
+                showHomeTab('accounts');
+            });
+        }
+
         var accountDetailBack = document.getElementById('accountDetailBack');
         if (accountDetailBack) {
             accountDetailBack.addEventListener('click', function () {
@@ -189,6 +276,60 @@
         if (accountDetailPay) {
             accountDetailPay.addEventListener('click', function () {
                 window.location.href = 'pay_transfer.html';
+            });
+        }
+        var accountDetailZelle = document.getElementById('accountDetailZelle');
+        if (accountDetailZelle) {
+            accountDetailZelle.addEventListener('click', function () {
+                window.location.href = 'pay_transfer.html';
+            });
+        }
+
+        function openAccountsInfo(title, html) {
+            var overlay = document.getElementById('accountsInfoOverlay');
+            var titleEl = document.getElementById('accountsInfoTitle');
+            var bodyEl = document.getElementById('accountsInfoBody');
+            if (!overlay) return;
+            if (titleEl) titleEl.textContent = title;
+            if (bodyEl) bodyEl.innerHTML = html;
+            overlay.hidden = false;
+            overlay.classList.add('is-open');
+            overlay.setAttribute('aria-hidden', 'false');
+        }
+        function closeAccountsInfo() {
+            var overlay = document.getElementById('accountsInfoOverlay');
+            if (!overlay) return;
+            overlay.classList.remove('is-open');
+            overlay.hidden = true;
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+        var openAccountTool = document.getElementById('openAccountTool');
+        if (openAccountTool) {
+            openAccountTool.addEventListener('click', function () {
+                var products = document.querySelector('.nav-right .nav-item:nth-child(2)');
+                if (products) products.click();
+            });
+        }
+        var organizeAccountsTool = document.getElementById('organizeAccountsTool');
+        if (organizeAccountsTool) {
+            organizeAccountsTool.addEventListener('click', function () {
+                openAccountsInfo('Organize accounts',
+                    '<p>In the Bank of America app you can reorder, hide, or nickname accounts on Accounts Overview. This profile shows every deposit, card, loan, and Merrill account that belongs to the signed-in customer.</p>');
+            });
+        }
+        var linkAccountsTool = document.getElementById('linkAccountsTool');
+        if (linkAccountsTool) {
+            linkAccountsTool.addEventListener('click', function () {
+                openAccountsInfo('My Financial Picture®',
+                    '<p>Add checking, credit cards, loans, and investments from other institutions so they appear under Accounts Overview, the same way Bank of America links external accounts.</p>');
+            });
+        }
+        var accountsInfoClose = document.getElementById('accountsInfoClose');
+        if (accountsInfoClose) accountsInfoClose.addEventListener('click', closeAccountsInfo);
+        var accountsInfoOverlay = document.getElementById('accountsInfoOverlay');
+        if (accountsInfoOverlay) {
+            accountsInfoOverlay.addEventListener('click', function (e) {
+                if (e.target === accountsInfoOverlay) closeAccountsInfo();
             });
         }
         var accountDetailInbox = document.getElementById('accountDetailInbox');

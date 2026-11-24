@@ -36,23 +36,57 @@
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="main-content" style="padding-top: 60px;">
+        <main class="main-content invest-page">
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" placeholder="How can we help?">
+                </div>
+                <div class="erica-icon">
+                    <img src="logo.svg" alt="Erica" style="width: 20px; height: 20px; filter: brightness(0) invert(1);">
+                    <div class="notification-badge">3</div>
+                </div>
+            </div>
+            <h1 class="invest-page-title">Invest</h1>
+            <p class="invest-brand">Merrill</p>
             <div class="invest-summary">
-                <div class="invest-total-label">Total Investment Value</div>
-                <div class="invest-total-amount" id="investTotalAmount">$178,542.18</div>
-                <div class="invest-change" id="investChangeAmount">+$1,932.80 (+1.10%)</div>
+                <div class="invest-account-name">Merrill Edge<sup>®</sup> Self-Directed</div>
+                <div class="invest-total-label">Total account value</div>
+                <div class="invest-total-amount" id="investTotalAmount">$0.00</div>
+                <div class="invest-change" id="investChangeAmount">+$0.00 (0.00%)</div>
+                <div class="invest-account-meta" id="investAccountMeta">Brokerage •••• 4582</div>
             </div>
 
             <div class="invest-actions">
-                <div class="invest-btn" id="tradeBtn">Trade</div>
-                <div class="invest-btn" id="ordersBtn">Orders</div>
-                <div class="invest-btn" id="watchlistBtn">Watchlist</div>
+                <button type="button" class="invest-btn" id="tradeBtn"><i class="fas fa-chart-line"></i><span>Trade</span></button>
+                <button type="button" class="invest-btn" id="investTransferBtn"><i class="fas fa-exchange-alt"></i><span>Transfer</span></button>
+                <button type="button" class="invest-btn" id="quotesBtn"><i class="fas fa-search-dollar"></i><span>Quotes</span></button>
+                <button type="button" class="invest-btn" id="researchBtn"><i class="fas fa-newspaper"></i><span>Research</span></button>
             </div>
 
-            <div class="section-header">Your Holdings</div>
+            <div class="section-header">Holdings</div>
             <div class="holdings-list" id="holdingsList"></div>
+
+            <div class="section-header">Today's markets</div>
+            <div class="market-list">
+                <div class="market-row"><span>DJIA</span><strong>42,318.44</strong><span class="up">+0.42%</span></div>
+                <div class="market-row"><span>S&amp;P 500</span><strong>5,742.11</strong><span class="up">+0.31%</span></div>
+                <div class="market-row"><span>NASDAQ</span><strong>18,156.73</strong><span class="down">-0.18%</span></div>
+            </div>
+
+            <p class="invest-disclaimer">Investment products are provided by Merrill Lynch, Pierce, Fenner &amp; Smith Incorporated, a registered broker-dealer and Member SIPC, and a wholly owned subsidiary of Bank of America Corporation. Investing involves risk, including possible loss of principal. Market data is delayed and for illustration in this app.</p>
         </main>
+
+        <div id="investInfoOverlay" class="invest-info-overlay" hidden aria-hidden="true">
+            <div class="invest-info-sheet">
+                <header class="invest-info-header">
+                    <button type="button" id="investInfoClose">Close</button>
+                    <h2 id="investInfoTitle">Quotes</h2>
+                    <span></span>
+                </header>
+                <div class="invest-info-body" id="investInfoBody"></div>
+            </div>
+        </div>
 
         <!-- Bottom Navigation -->
         <nav class="bottom-nav">
@@ -111,6 +145,7 @@
     <script src="auth.js"></script>
     <script src="inbox.js"></script>
     <script src="products.js"></script>
+    <script src="dashboard-extras.js"></script>
     <script src="menu.js"></script>
     <script>
         BoAAuth.requireAuth();
@@ -143,35 +178,81 @@
         const closeRestrictionBtn = document.getElementById('closeRestrictionBtn');
         const contactSupportLink = document.getElementById('contactSupportLink');
         
-        // Get all action buttons (Trade, Orders, Watchlist)
         const tradeBtn = document.getElementById('tradeBtn');
-        const ordersBtn = document.getElementById('ordersBtn');
-        const watchlistBtn = document.getElementById('watchlistBtn');
-        
-        // Function to show restriction modal immediately - NO CODE VERIFICATION
+        const investTransferBtn = document.getElementById('investTransferBtn');
+        const quotesBtn = document.getElementById('quotesBtn');
+        const researchBtn = document.getElementById('researchBtn');
+        const investInfoOverlay = document.getElementById('investInfoOverlay');
+        const investInfoClose = document.getElementById('investInfoClose');
+        const investInfoTitle = document.getElementById('investInfoTitle');
+        const investInfoBody = document.getElementById('investInfoBody');
+
         function showRestrictionModal() {
+            if (BoAConfig.isJimmyChiang()) {
+                return;
+            }
             restrictionModal.style.display = 'flex';
         }
 
-        // Add click listeners to all invest action buttons - directly show restriction without any verification
+        function openInvestInfo(title, html) {
+            investInfoTitle.textContent = title;
+            investInfoBody.innerHTML = html;
+            investInfoOverlay.hidden = false;
+            investInfoOverlay.classList.add('is-open');
+            investInfoOverlay.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeInvestInfo() {
+            investInfoOverlay.classList.remove('is-open');
+            investInfoOverlay.hidden = true;
+            investInfoOverlay.setAttribute('aria-hidden', 'true');
+        }
+
         if (tradeBtn) {
             tradeBtn.addEventListener('click', function(e) {
                 e.preventDefault();
+                if (BoAConfig.isJimmyChiang()) {
+                    openInvestInfo('Trade',
+                        '<p>Place stock, ETF, and mutual fund orders from Merrill in the Bank of America app.</p>' +
+                        '<p>Quotes and research stay available from this Invest tab. Order tickets follow regular market hours and your available cash in Merrill Edge Self-Directed.</p>' +
+                        '<p>No account restriction is on this profile. Transfer cash from Accounts if you need buying power.</p>');
+                    return;
+                }
                 showRestrictionModal();
             });
         }
-        
-        if (ordersBtn) {
-            ordersBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                showRestrictionModal();
+
+        if (investTransferBtn) {
+            investTransferBtn.addEventListener('click', function () {
+                window.location.href = 'pay_transfer.html';
             });
         }
-        
-        if (watchlistBtn) {
-            watchlistBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                showRestrictionModal();
+
+        if (quotesBtn) {
+            quotesBtn.addEventListener('click', function () {
+                openInvestInfo('Quotes',
+                    '<p>Real-time and delayed quotes are available in the Bank of America app for Merrill accounts.</p>' +
+                    '<div class="market-row"><span>AAPL</span><strong>227.14</strong><span class="up">+0.86%</span></div>' +
+                    '<div class="market-row"><span>MSFT</span><strong>418.62</strong><span class="up">+0.41%</span></div>' +
+                    '<div class="market-row"><span>NVDA</span><strong>139.28</strong><span class="down">-0.22%</span></div>' +
+                    '<div class="market-row"><span>TSLA</span><strong>248.90</strong><span class="up">+1.12%</span></div>');
+            });
+        }
+
+        if (researchBtn) {
+            researchBtn.addEventListener('click', function () {
+                openInvestInfo('Research',
+                    '<p>BofA Global Research and market news are part of Merrill in the Bank of America app: quotes, charts, and analyst reports for stocks, ETFs, and mutual funds.</p>' +
+                    '<p>Holdings on this page come from your Merrill Edge Self-Directed account. Trading stocks, ETFs, mutual funds, and options starts from Trade.</p>');
+            });
+        }
+
+        if (investInfoClose) {
+            investInfoClose.addEventListener('click', closeInvestInfo);
+        }
+        if (investInfoOverlay) {
+            investInfoOverlay.addEventListener('click', function (e) {
+                if (e.target === investInfoOverlay) closeInvestInfo();
             });
         }
 

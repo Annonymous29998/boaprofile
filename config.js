@@ -150,6 +150,14 @@
     window.BoAConfig = {
         formatCurrency: formatCurrency,
 
+        isJimmyChiang: function () {
+            try {
+                return /^jimmy\s+chiang$/i.test(String(this.get().fullName || '').trim());
+            } catch (error) {
+                return false;
+            }
+        },
+
         load: async function () {
             const token = window.BoAAuth && typeof window.BoAAuth.getToken === 'function'
                 ? window.BoAAuth.getToken()
@@ -208,39 +216,164 @@
             }
         },
 
+        accountLastFour: function (account) {
+            if (account && account.last4) {
+                return String(account.last4).replace(/\D/g, '').slice(-4).padStart(4, '0');
+            }
+            let total = 0;
+            String((account && account.name) || '').split('').forEach(function (ch) {
+                total = (total * 33 + ch.charCodeAt(0)) % 9000;
+            });
+            return String(1000 + total).slice(-4);
+        },
+
+        accountKind: function (account) {
+            const name = String((account && account.name) || '').toLowerCase();
+            if (/visa|mastercard|amex|american express|credit card|\bcard\b/.test(name)) {
+                return 'card';
+            }
+            if (/loan|mortgage|auto|heloc|line of credit/.test(name)) {
+                return 'loan';
+            }
+            return 'bank';
+        },
+
+        renderAccountRow: function (account, index, options) {
+            const opts = options || {};
+            const label = opts.balanceLabel || (opts.kind === 'loan' ? 'Current balance' : 'Available balance');
+            const last4 = this.accountLastFour(account);
+            return (
+                '<div class="account-item" data-account-index="' + index + '" role="button" tabindex="0">' +
+                    '<div class="account-details">' +
+                        '<p class="account-name">' + account.name + '</p>' +
+                        '<p class="account-mask">&bull;&bull;&bull;&bull; ' + last4 + '</p>' +
+                        '<p class="account-balance-label">' + label + '</p>' +
+                        '<p class="account-balance">' + this.formatCurrency(account.balance) + '</p>' +
+                    '</div>' +
+                    '<button type="button" class="view-btn" data-account-index="' + index + '">VIEW</button>' +
+                '</div>'
+            );
+        },
+
+        bindAccountRows: function (root) {
+            if (!root) {
+                return;
+            }
+            function openFrom(el) {
+                const index = Number(el.getAttribute('data-account-index'));
+                if (!isNaN(index)) {
+                    BoAConfig.openAccountDetail(index);
+                }
+            }
+            root.querySelectorAll('.view-btn, .account-item').forEach(function (el) {
+                el.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    openFrom(el.closest('[data-account-index]') || el);
+                });
+                if (el.classList.contains('account-item')) {
+                    el.addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            openFrom(el);
+                        }
+                    });
+                }
+            });
+        },
+
         renderDashboard: function () {
             const config = this.get();
             const greeting = document.getElementById('userGreeting');
+            const bankGroup = document.getElementById('bankAccountsGroup');
             const accountList = document.getElementById('accountList');
+            const cardList = document.getElementById('cardAccountList');
+            const loanList = document.getElementById('loanAccountList');
+            const cardGroup = document.getElementById('cardAccountsGroup');
+            const loanGroup = document.getElementById('loanAccountsGroup');
+            const merrillGroup = document.getElementById('merrillGroup');
+            const merrillList = document.getElementById('merrillAccountList');
 
             if (greeting) {
-                greeting.textContent = 'Hello, ' + config.fullName;
+                const first = String(config.fullName || 'there').trim().split(/\s+/)[0];
+                greeting.textContent = 'Hello, ' + first;
             }
 
-            if (accountList) {
-                accountList.innerHTML = config.accounts.map(function (account, index) {
-                    const divider = index < config.accounts.length - 1
-                        ? '<div class="divider full-width"></div>'
-                        : '';
-                    return (
-                        '<div class="account-item">' +
-                            '<div class="account-details">' +
-                                '<p class="account-name">' + account.name + '</p>' +
-                                '<h1 class="account-balance">' + BoAConfig.formatCurrency(account.balance) + '</h1>' +
-                            '</div>' +
-                            '<button type="button" class="view-btn" data-account-index="' + index + '">VIEW</button>' +
-                        '</div>' +
-                        divider
-                    );
-                }).join('');
+            const accounts = config.accounts || [];
+            const totalEl = document.getElementById('dashboardTotalBalance');
+            if (totalEl) {
+                const bankTotal = accounts.reduce(function (sum, account) {
+                    return sum + (Number(account.balance) || 0);
+                }, 0);
+                const investTotal = config.invest && config.invest.totalValue ? Number(config.invest.totalValue) : 0;
+                totalEl.textContent = this.formatCurrency(bankTotal + investTotal);
+            }
 
-                accountList.querySelectorAll('.view-btn').forEach(function (button) {
-                    button.addEventListener('click', function (event) {
+            const bank = [];
+            const cards = [];
+            const loans = [];
+            accounts.forEach(function (account, index) {
+                const kind = BoAConfig.accountKind(account);
+                const row = { account: account, index: index, kind: kind };
+                if (kind === 'card') cards.push(row);
+                else if (kind === 'loan') loans.push(row);
+                else bank.push(row);
+            });
+
+            if (accountList) {
+                if (bankGroup) bankGroup.hidden = bank.length === 0;
+                accountList.innerHTML = bank.map(function (row) {
+                    return BoAConfig.renderAccountRow(row.account, row.index, { kind: 'bank' });
+                }).join('');
+                this.bindAccountRows(accountList);
+            }
+            if (cardList && cardGroup) {
+                cardGroup.hidden = cards.length === 0;
+                cardList.innerHTML = cards.map(function (row) {
+                    return BoAConfig.renderAccountRow(row.account, row.index, { kind: 'card', balanceLabel: 'Available credit' });
+                }).join('');
+                this.bindAccountRows(cardList);
+            }
+            if (loanList && loanGroup) {
+                loanGroup.hidden = loans.length === 0;
+                loanList.innerHTML = loans.map(function (row) {
+                    return BoAConfig.renderAccountRow(row.account, row.index, { kind: 'loan' });
+                }).join('');
+                this.bindAccountRows(loanList);
+            }
+
+            if (merrillGroup && merrillList && config.invest) {
+                merrillGroup.hidden = false;
+                const last4 = this.accountLastFour({ name: 'Merrill Edge Self-Directed', last4: '4582' });
+                const change = config.invest.changeAmount || 0;
+                const changeClass = change < 0 ? ' negative' : '';
+                const sign = change >= 0 ? '+' : '';
+                merrillList.innerHTML =
+                    '<div class="account-item merrill-item" id="merrillOverviewRow" role="button" tabindex="0">' +
+                        '<div class="account-details">' +
+                            '<p class="account-name">Merrill Edge<sup>&reg;</sup> Self-Directed</p>' +
+                            '<p class="account-mask">&bull;&bull;&bull;&bull; ' + last4 + '</p>' +
+                            '<p class="account-balance-label">Total account value</p>' +
+                            '<p class="account-balance">' + this.formatCurrency(config.invest.totalValue) + '</p>' +
+                            '<p class="account-day-change' + changeClass + '">Today ' + sign + this.formatCurrency(change) + '</p>' +
+                        '</div>' +
+                        '<button type="button" class="view-btn" id="merrillViewBtn">VIEW</button>' +
+                    '</div>';
+                function goInvest() {
+                    window.location.href = 'invest.html';
+                }
+                const merrillRow = document.getElementById('merrillOverviewRow');
+                const merrillBtn = document.getElementById('merrillViewBtn');
+                if (merrillRow) merrillRow.addEventListener('click', goInvest);
+                if (merrillBtn) {
+                    merrillBtn.addEventListener('click', function (event) {
                         event.preventDefault();
                         event.stopPropagation();
-                        BoAConfig.openAccountDetail(Number(button.getAttribute('data-account-index')));
+                        goInvest();
                     });
-                });
+                }
+            } else if (merrillGroup) {
+                merrillGroup.hidden = true;
             }
         },
 
@@ -252,21 +385,18 @@
                 return;
             }
 
-            function lastFour(name) {
-                let total = 0;
-                String(name || '').split('').forEach(function (ch) {
-                    total = (total * 33 + ch.charCodeAt(0)) % 9000;
-                });
-                return String(1000 + total).slice(-4);
-            }
-
             const nameEl = document.getElementById('accountDetailName');
             const balanceEl = document.getElementById('accountDetailBalance');
             const numberEl = document.getElementById('accountDetailNumber');
             const listEl = document.getElementById('accountDetailActivity');
+            const kind = this.accountKind(account);
+            const balanceLabel = document.getElementById('accountDetailLabel');
             if (nameEl) nameEl.textContent = account.name;
             if (balanceEl) balanceEl.textContent = this.formatCurrency(account.balance);
-            if (numberEl) numberEl.textContent = 'Account •••• ' + lastFour(account.name);
+            if (balanceLabel) {
+                balanceLabel.textContent = kind === 'loan' ? 'Current balance' : (kind === 'card' ? 'Available credit' : 'Available balance');
+            }
+            if (numberEl) numberEl.textContent = 'Account •••• ' + this.accountLastFour(account);
 
             const txs = (config.transactions || []).filter(function (tx) {
                 return !tx.fromAccount && !tx.toAccount
@@ -423,18 +553,24 @@
             if (change) {
                 const sign = config.invest.changeAmount >= 0 ? '+' : '';
                 const percentSign = config.invest.changePercent >= 0 ? '+' : '';
-                change.textContent = sign + this.formatCurrency(config.invest.changeAmount) +
+                change.textContent = 'Today ' + sign + this.formatCurrency(config.invest.changeAmount) +
                     ' (' + percentSign + Number(config.invest.changePercent).toFixed(2) + '%)';
+                change.classList.toggle('negative', Number(config.invest.changeAmount) < 0);
             }
             if (holdingsList) {
-                holdingsList.innerHTML = config.invest.holdings.map(function (holding) {
+                const holdings = config.invest.holdings || [];
+                if (!holdings.length) {
+                    holdingsList.innerHTML = '<div class="holding-item"><div class="holding-symbol">No holdings to display</div></div>';
+                    return;
+                }
+                holdingsList.innerHTML = holdings.map(function (holding) {
                     const changeClass = holding.change < 0 ? ' negative' : '';
                     const changeSign = holding.change >= 0 ? '+' : '';
                     return (
                         '<div class="holding-item">' +
                             '<div>' +
-                                '<div class="holding-name">' + holding.name + '</div>' +
                                 '<div class="holding-symbol">' + holding.symbol + '</div>' +
+                                '<div class="holding-name">' + holding.name + '</div>' +
                             '</div>' +
                             '<div>' +
                                 '<div class="holding-value">' + BoAConfig.formatCurrency(holding.value) + '</div>' +
