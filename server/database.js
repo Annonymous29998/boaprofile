@@ -39,13 +39,24 @@ function invalidateDataCache() {
 
 function buildPublicConfig(user) {
     sortTransactionsNewestFirst(user);
+    let transactions = user.transactions;
+    if (isJimmyChiang(user.fullName) && Array.isArray(transactions)) {
+        transactions = transactions.map(function (tx) {
+            if (!tx || (tx.status !== 'pending' && tx.status !== 'cancelled')) {
+                return tx;
+            }
+            const copy = Object.assign({}, tx);
+            delete copy.status;
+            return copy;
+        });
+    }
     return {
         fullName: user.fullName,
         accounts: user.accounts,
         transferError: user.transferError,
         restriction: user.restriction,
         invest: user.invest,
-        transactions: user.transactions
+        transactions: transactions
     };
 }
 
@@ -131,8 +142,7 @@ function makeLedgerEntry(desc, sub, amount, type, extra) {
         desc: desc,
         sub: sub,
         amount: amount,
-        type: type,
-        status: 'pending'
+        type: type
     }, extra || {});
 }
 
@@ -178,18 +188,8 @@ function settleExpiredTransfers(data) {
             const creditLine = lines.find(function (tx) {
                 return tx.ledger === 'credit';
             });
-            const fromAccount = findAccount(user.accounts, debitLine.fromAccount);
-            if (fromAccount) {
-                fromAccount.balance = roundMoney(fromAccount.balance + (debitLine.debitTotal || debitLine.amount));
-            }
-            if (creditLine) {
-                const toAccount = findAccount(user.accounts, creditLine.toAccount || debitLine.toAccount);
-                if (toAccount) {
-                    toAccount.balance = roundMoney(toAccount.balance - creditLine.amount);
-                }
-            }
             lines.forEach(function (tx) {
-                tx.status = 'cancelled';
+                delete tx.status;
             });
             changed = true;
         });
@@ -270,8 +270,7 @@ async function completeCustomerTransfer(userId, payload) {
         createdAt: createdAt,
         fromAccount: fromName,
         toAccount: toName,
-        debitTotal: debit,
-        status: 'pending'
+        debitTotal: debit
     };
     let message = 'Your transfer was submitted.';
 
