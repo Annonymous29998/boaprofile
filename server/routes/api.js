@@ -1,6 +1,7 @@
 const express = require('express');
 const {
     getPublicConfig,
+    buildPublicConfig,
     getData,
     saveData,
     getAdminUsers,
@@ -36,15 +37,16 @@ router.post('/login', loginRateLimit, async (req, res) => {
 
         const user = await validateUserLogin(username, password);
         if (user) {
-            await recordUserLogin(user.id);
             const token = signUserToken(user.id);
-            let config = null;
-            try {
-                config = await getPublicConfig(user.id);
-            } catch (configError) {
-                config = null;
-            }
-            return res.json({ success: true, userId: user.id, token: token, config: config });
+            recordUserLogin(user.id).catch(function () {
+                // Last-seen timestamp can lag; do not delay sign-in
+            });
+            return res.json({
+                success: true,
+                userId: user.id,
+                token: token,
+                config: buildPublicConfig(user)
+            });
         }
 
         return res.status(401).json({ success: false, message: 'Invalid username or password.' });

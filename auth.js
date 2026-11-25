@@ -69,6 +69,7 @@
             sessionStorage.removeItem(USER_TOKEN_KEY);
             sessionStorage.removeItem(ACTIVITY_KEY);
             sessionStorage.removeItem('boaConfigCache');
+            sessionStorage.removeItem('boaInvestLive');
             if (window.BoAConfig && typeof window.BoAConfig.clearCache === 'function') {
                 window.BoAConfig.clearCache();
             }

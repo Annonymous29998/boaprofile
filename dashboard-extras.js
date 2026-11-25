@@ -8,6 +8,7 @@
 
     let overlay = null;
     let ericaLog = [];
+    let viewportBound = false;
 
     function escapeHtml(value) {
         return String(value == null ? '' : value)
@@ -174,7 +175,7 @@
                 }).join('') +
             '</div>' +
             '<form class="erica-form" id="ericaForm">' +
-                '<input type="text" id="ericaInput" placeholder="Ask Erica" autocomplete="off">' +
+                '<input type="text" id="ericaInput" placeholder="Ask Erica" autocomplete="off" enterkeyhint="send" autocapitalize="sentences">' +
                 '<button type="submit">Send</button>' +
             '</form>';
         paintEricaThread();
@@ -241,8 +242,50 @@
             '</article>';
     }
 
+    function resetOverlayViewport() {
+        if (!overlay) {
+            return;
+        }
+        overlay.style.top = '';
+        overlay.style.left = '';
+        overlay.style.right = '';
+        overlay.style.bottom = '';
+        overlay.style.width = '';
+        overlay.style.height = '';
+    }
+
+    function syncOverlayToViewport() {
+        if (!overlay || !overlay.classList.contains('is-open') || !window.visualViewport) {
+            return;
+        }
+        const host = overlay.parentElement;
+        if (!host) {
+            return;
+        }
+        const hostRect = host.getBoundingClientRect();
+        const vv = window.visualViewport;
+        const top = Math.max(0, vv.offsetTop - hostRect.top);
+        const height = Math.max(120, Math.min(host.clientHeight - top, vv.height));
+        overlay.style.top = top + 'px';
+        overlay.style.left = '0';
+        overlay.style.right = '0';
+        overlay.style.bottom = 'auto';
+        overlay.style.width = '100%';
+        overlay.style.height = height + 'px';
+    }
+
+    function bindViewportLock() {
+        if (viewportBound || !window.visualViewport) {
+            return;
+        }
+        viewportBound = true;
+        window.visualViewport.addEventListener('resize', syncOverlayToViewport);
+        window.visualViewport.addEventListener('scroll', syncOverlayToViewport);
+    }
+
     function openExtra(kind, seed) {
         ensureOverlay();
+        bindViewportLock();
         if (kind === 'erica') {
             renderErica(seed);
         } else if (kind === 'lifeplan') {
@@ -253,9 +296,12 @@
         overlay.classList.add('is-open');
         overlay.setAttribute('aria-hidden', 'false');
         document.body.classList.add('dash-extra-open');
+        syncOverlayToViewport();
         const input = overlay.querySelector('#ericaInput');
         if (input) {
-            input.focus();
+            setTimeout(function () {
+                input.focus({ preventScroll: true });
+            }, 80);
         }
     }
 
@@ -264,6 +310,7 @@
         overlay.classList.remove('is-open');
         overlay.setAttribute('aria-hidden', 'true');
         document.body.classList.remove('dash-extra-open');
+        resetOverlayViewport();
     }
 
     function bind() {
@@ -283,6 +330,7 @@
             search.addEventListener('focus', function () {
                 if (!overlay || !overlay.classList.contains('is-open')) {
                     ericaLog = [];
+                    search.blur();
                     openExtra('erica');
                 }
             });

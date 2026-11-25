@@ -56,7 +56,7 @@ app.use(express.static(rootDir, {
     maxAge: process.env.VERCEL === '1' || process.env.NODE_ENV === 'production' ? '1h' : 0,
     setHeaders: function (res, filePath) {
         if (/\.(?:css|js|svg|woff2?|png|jpg|jpeg|gif|ico)$/i.test(filePath)) {
-            res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+            res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
         } else if (/\.html?$/i.test(filePath)) {
             res.setHeader('Cache-Control', 'no-cache');
         }

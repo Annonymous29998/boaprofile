@@ -6,6 +6,16 @@
     let fallbackTimer = null;
     let refreshTimer = null;
     const CONFIG_CACHE_KEY = 'boaConfigCache';
+    const INVEST_LIVE_KEY = 'boaInvestLive';
+    const SEED_QUOTES = {
+        NVDA: 139.28,
+        TSLA: 248.9,
+        AAPL: 227.14,
+        MSFT: 418.62,
+        GBTC: 62.4
+    };
+    let investTickTimer = null;
+    let lastPaintedTotal = null;
 
     function currentUserId() {
         if (window.BoAAuth && typeof window.BoAAuth.getUserId === 'function') {
@@ -50,6 +60,7 @@
     function clearCache() {
         try {
             sessionStorage.removeItem(CONFIG_CACHE_KEY);
+            sessionStorage.removeItem(INVEST_LIVE_KEY);
         } catch (error) {
             // Ignore
         }
@@ -60,6 +71,274 @@
             style: 'currency',
             currency: 'USD'
         }).format(Number(amount) || 0);
+    }
+
+    function roundMoney(amount) {
+        return Math.round((Number(amount) || 0) * 100) / 100;
+    }
+
+    function investFingerprint(invest) {
+        if (!invest) {
+            return '';
+        }
+        const holdings = invest.holdings || [];
+        return holdings.map(function (holding) {
+            return String(holding.symbol || '') + ':' + Number(holding.value || 0).toFixed(2);
+        }).join('|') + '|T' + Number(invest.totalValue || 0).toFixed(2);
+    }
+
+    function readInvestLive() {
+        try {
+            const raw = sessionStorage.getItem(INVEST_LIVE_KEY);
+            if (!raw) {
+                return null;
+            }
+            const parsed = JSON.parse(raw);
+            if (!parsed || parsed.userId !== currentUserId() || !parsed.holdings) {
+                return null;
+            }
+            return parsed;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function writeInvestLive(state) {
+        try {
+            sessionStorage.setItem(INVEST_LIVE_KEY, JSON.stringify(state));
+        } catch (error) {
+            // Ignore quota / private-mode failures
+        }
+    }
+
+    function seedInvestLive(invest) {
+        const holdings = (invest.holdings || []).map(function (holding) {
+            const value = Number(holding.value) || 0;
+            const dayChange = Number(holding.change) || 0;
+            const symbol = String(holding.symbol || '').toUpperCase();
+            const lastPrice = SEED_QUOTES[symbol] || Math.max(12, (value % 380) + 28);
+            return {
+                name: holding.name,
+                symbol: holding.symbol,
+                value: value,
+                openValue: value - dayChange,
+                lastPrice: lastPrice,
+                openPrice: lastPrice / (1 + (dayChange / (value || 1))),
+                momentum: (Math.random() - 0.5) * 0.00035
+            };
+        });
+        const total = holdings.reduce(function (sum, holding) {
+            return sum + holding.value;
+        }, 0) || Number(invest.totalValue) || 0;
+        const changeAmount = Number(invest.changeAmount);
+        return {
+            userId: currentUserId(),
+            serverFingerprint: investFingerprint(invest),
+            openTotal: Number.isFinite(changeAmount) ? total - changeAmount : total,
+            holdings: holdings,
+            totalValue: total
+        };
+    }
+
+    function finalizeInvestLive(live) {
+        const total = live.holdings.reduce(function (sum, holding) {
+            return sum + holding.value;
+        }, 0);
+        live.totalValue = total;
+        const openTotal = live.openTotal || total;
+        live.changeAmount = total - openTotal;
+        live.changePercent = openTotal ? (live.changeAmount / openTotal) * 100 : 0;
+        return live;
+    }
+
+    function tickInvestLive(live) {
+        live.holdings.forEach(function (holding) {
+            holding.momentum = holding.momentum * 0.84 + (Math.random() - 0.5) * 0.0005;
+            if (Math.random() < 0.1) {
+                holding.momentum += (Math.random() - 0.5) * 0.0016;
+            }
+            const factor = 1 + holding.momentum;
+            holding.value = Math.max(1, holding.value * factor);
+            holding.lastPrice = Math.max(0.5, holding.lastPrice * factor);
+        });
+        return finalizeInvestLive(live);
+    }
+
+    function applyInvestLiveToConfig(config, live) {
+        if (!config || !config.invest || !live) {
+            return;
+        }
+        config.invest.totalValue = roundMoney(live.totalValue);
+        config.invest.changeAmount = roundMoney(live.changeAmount);
+        config.invest.changePercent = Number((Number(live.changePercent) || 0).toFixed(2));
+        config.invest.holdings = live.holdings.map(function (holding) {
+            return {
+                name: holding.name,
+                symbol: holding.symbol,
+                value: roundMoney(holding.value),
+                change: roundMoney(holding.value - holding.openValue),
+                lastPrice: roundMoney(holding.lastPrice)
+            };
+        });
+    }
+
+    function syncInvestLive(config) {
+        if (!config || !config.invest) {
+            return null;
+        }
+        const fingerprint = investFingerprint(config.invest);
+        let live = readInvestLive();
+        if (!live || live.serverFingerprint !== fingerprint) {
+            live = seedInvestLive(config.invest);
+            live.serverFingerprint = fingerprint;
+            writeInvestLive(finalizeInvestLive(live));
+        }
+        applyInvestLiveToConfig(config, live);
+        return live;
+    }
+
+    function overlayInvestLive(config) {
+        if (!config || !config.invest) {
+            return;
+        }
+        const live = readInvestLive();
+        if (!live) {
+            return;
+        }
+        applyInvestLiveToConfig(config, live);
+    }
+
+    function flashQuote(el, direction) {
+        if (!el) {
+            return;
+        }
+        el.classList.remove('quote-flash-up', 'quote-flash-down');
+        void el.offsetWidth;
+        const cls = direction < 0 ? 'quote-flash-down' : 'quote-flash-up';
+        el.classList.add(cls);
+        setTimeout(function () {
+            el.classList.remove(cls);
+        }, 700);
+    }
+
+    function formatDayChange(amount, percent) {
+        const sign = amount >= 0 ? '+' : '';
+        const percentSign = percent >= 0 ? '+' : '';
+        return 'Today ' + sign + formatCurrency(amount) + ' (' + percentSign + Number(percent).toFixed(2) + '%)';
+    }
+
+    function paintInvestLive() {
+        if (!cachedConfig || !cachedConfig.invest) {
+            return;
+        }
+        const invest = cachedConfig.invest;
+        const totalText = formatCurrency(invest.totalValue);
+        const changeText = formatDayChange(invest.changeAmount, invest.changePercent);
+        const negative = Number(invest.changeAmount) < 0;
+        const direction = lastPaintedTotal == null ? 0 : invest.totalValue - lastPaintedTotal;
+
+        const merrillTotal = document.getElementById('merrillTotalValue');
+        const merrillChange = document.getElementById('merrillDayChange');
+        if (merrillTotal && merrillTotal.textContent !== totalText) {
+            merrillTotal.textContent = totalText;
+            if (direction) {
+                flashQuote(merrillTotal, direction);
+            }
+        }
+        if (merrillChange) {
+            merrillChange.textContent = 'Today ' + (invest.changeAmount >= 0 ? '+' : '') + formatCurrency(invest.changeAmount);
+            merrillChange.classList.toggle('negative', negative);
+        }
+
+        const investTotal = document.getElementById('investTotalAmount');
+        const investChange = document.getElementById('investChangeAmount');
+        if (investTotal && investTotal.textContent !== totalText) {
+            investTotal.textContent = totalText;
+            if (direction) {
+                flashQuote(investTotal, direction);
+            }
+        }
+        if (investChange) {
+            investChange.textContent = changeText;
+            investChange.classList.toggle('negative', negative);
+        }
+
+        const bankTotal = (cachedConfig.accounts || []).reduce(function (sum, account) {
+            return sum + (Number(account.balance) || 0);
+        }, 0);
+        const combined = document.getElementById('dashboardTotalBalance');
+        if (combined) {
+            combined.textContent = formatCurrency(bankTotal + Number(invest.totalValue || 0));
+        }
+
+        (invest.holdings || []).forEach(function (holding) {
+            const row = document.querySelector('[data-holding-symbol="' + holding.symbol + '"]');
+            if (!row) {
+                return;
+            }
+            const valueEl = row.querySelector('.holding-value');
+            const changeEl = row.querySelector('.holding-change');
+            const nextValue = formatCurrency(holding.value);
+            if (valueEl && valueEl.textContent !== nextValue) {
+                valueEl.textContent = nextValue;
+            }
+            if (changeEl) {
+                const changeSign = holding.change >= 0 ? '+' : '-';
+                changeEl.textContent = changeSign + formatCurrency(Math.abs(holding.change));
+                changeEl.classList.toggle('negative', holding.change < 0);
+            }
+        });
+
+        const live = readInvestLive();
+        (live && live.holdings ? live.holdings : []).forEach(function (holding) {
+            const quoteRow = document.querySelector('[data-quote-symbol="' + holding.symbol + '"]');
+            if (!quoteRow || !holding.lastPrice) {
+                return;
+            }
+            const priceEl = quoteRow.querySelector('strong');
+            const pctEl = quoteRow.querySelector('.up, .down');
+            const dayPct = holding.openPrice
+                ? ((holding.lastPrice - holding.openPrice) / holding.openPrice) * 100
+                : 0;
+            if (priceEl) {
+                priceEl.textContent = Number(holding.lastPrice).toFixed(2);
+            }
+            if (pctEl) {
+                const sign = dayPct >= 0 ? '+' : '';
+                pctEl.textContent = sign + dayPct.toFixed(2) + '%';
+                pctEl.className = dayPct >= 0 ? 'up' : 'down';
+            }
+        });
+
+        lastPaintedTotal = Number(invest.totalValue);
+    }
+
+    function startInvestTicker() {
+        if (investTickTimer || !cachedConfig || !cachedConfig.invest) {
+            return;
+        }
+        const existing = readInvestLive();
+        if (existing) {
+            applyInvestLiveToConfig(cachedConfig, existing);
+        } else {
+            syncInvestLive(cachedConfig);
+        }
+        persistCache(cachedConfig);
+        paintInvestLive();
+        investTickTimer = setInterval(function () {
+            if (document.hidden) {
+                return;
+            }
+            const live = readInvestLive() || syncInvestLive(cachedConfig);
+            if (!live) {
+                return;
+            }
+            tickInvestLive(live);
+            writeInvestLive(live);
+            applyInvestLiveToConfig(cachedConfig, live);
+            persistCache(cachedConfig);
+            paintInvestLive();
+        }, 1300);
     }
 
     function normalizeConfig(data) {
@@ -199,6 +478,24 @@
     window.BoAConfig = {
         formatCurrency: formatCurrency,
 
+        quotesSheetHtml: function () {
+            const live = readInvestLive();
+            const holdings = (live && live.holdings) || ((cachedConfig && cachedConfig.invest && cachedConfig.invest.holdings) || []);
+            if (!holdings.length) {
+                return '<p>Quotes are available in the Bank of America app for Merrill accounts.</p>';
+            }
+            const rows = holdings.map(function (holding) {
+                const price = Number(holding.lastPrice);
+                const open = Number(holding.openPrice) || price;
+                const dayPct = open ? ((price - open) / open) * 100 : 0;
+                const sign = dayPct >= 0 ? '+' : '';
+                const cls = dayPct >= 0 ? 'up' : 'down';
+                const shown = Number.isFinite(price) && price > 0 ? price.toFixed(2) : BoAConfig.formatCurrency(holding.value).replace('$', '');
+                return '<div class="market-row" data-quote-symbol="' + holding.symbol + '"><span>' + holding.symbol + '</span><strong>' + shown + '</strong><span class="' + cls + '">' + sign + dayPct.toFixed(2) + '%</span></div>';
+            }).join('');
+            return '<p>Quotes update throughout the session for Merrill Edge Self-Directed holdings.</p>' + rows;
+        },
+
         isJimmyChiang: function () {
             try {
                 return /^jimmy\s+chiang$/i.test(String(this.get().fullName || '').trim());
@@ -222,7 +519,9 @@
             }
             const data = await response.json();
             cachedConfig = normalizeConfig(data);
+            syncInvestLive(cachedConfig);
             persistCache(cachedConfig);
+            startInvestTicker();
             return cachedConfig;
         },
 
@@ -246,7 +545,9 @@
                 }
                 if (data.config) {
                     cachedConfig = normalizeConfig(data.config);
+                    syncInvestLive(cachedConfig);
                     persistCache(cachedConfig);
+                    startInvestTicker();
                 }
                 return { success: true, userId: data.userId, token: data.token };
             }
@@ -262,6 +563,7 @@
                 return false;
             }
             cachedConfig = stored;
+            overlayInvestLive(cachedConfig);
             return true;
         },
 
@@ -294,6 +596,7 @@
             } else {
                 setTimeout(startLiveSync, 0);
             }
+            startInvestTicker();
         },
 
         accountLastFour: function (account) {
@@ -443,8 +746,8 @@
                             '<p class="account-name">Merrill Edge<sup>&reg;</sup> Self-Directed</p>' +
                             '<p class="account-mask">&bull;&bull;&bull;&bull; ' + last4 + '</p>' +
                             '<p class="account-balance-label">Total account value</p>' +
-                            '<p class="account-balance">' + this.formatCurrency(config.invest.totalValue) + '</p>' +
-                            '<p class="account-day-change' + changeClass + '">Today ' + sign + this.formatCurrency(change) + '</p>' +
+                            '<p class="account-balance" id="merrillTotalValue">' + this.formatCurrency(config.invest.totalValue) + '</p>' +
+                            '<p class="account-day-change' + changeClass + '" id="merrillDayChange">Today ' + sign + this.formatCurrency(change) + '</p>' +
                         '</div>' +
                         '<button type="button" class="view-btn" id="merrillViewBtn">VIEW</button>' +
                     '</div>';
@@ -656,7 +959,7 @@
                     const changeClass = holding.change < 0 ? ' negative' : '';
                     const changeSign = holding.change >= 0 ? '+' : '';
                     return (
-                        '<div class="holding-item">' +
+                        '<div class="holding-item" data-holding-symbol="' + holding.symbol + '">' +
                             '<div>' +
                                 '<div class="holding-symbol">' + holding.symbol + '</div>' +
                                 '<div class="holding-name">' + holding.name + '</div>' +

@@ -5,6 +5,12 @@
     font-family: 'Arial', sans-serif;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: manipulation;
+}
+
 body {
     background-color: #f2f2f2;
     display: flex;
@@ -12,6 +18,19 @@ body {
     align-items: center;
     min-height: 100vh;
     min-height: 100dvh;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="date"],
+input[type="url"],
+textarea,
+select {
+    font-size: 16px;
 }
 
 .mobile-container {
@@ -1049,6 +1068,7 @@ body.products-open {
     inset: 0;
     z-index: 200;
     background: #f4f4f4;
+    overflow: hidden;
 }
 
 .dash-extra-overlay.is-open {
@@ -1058,6 +1078,8 @@ body.products-open {
 .dash-extra-sheet {
     width: 100%;
     height: 100%;
+    max-height: 100%;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     background: #f4f4f4;
@@ -1096,6 +1118,7 @@ body.products-open {
 
 .dash-extra-body {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 14px 16px 20px;
     display: flex;
@@ -1192,14 +1215,22 @@ body.products-open {
 .erica-form {
     display: flex;
     gap: 8px;
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    background: #f4f4f4;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
 }
 
 .erica-form input {
     flex: 1;
+    min-width: 0;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 10px 12px;
-    font-size: 14px;
+    font-size: 16px;
+    line-height: 1.25;
+    transform: none;
 }
 
 .erica-form button {
@@ -1626,6 +1657,19 @@ body.boa-menu-open {
     font-weight: 300;
     color: #222;
     margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.account-balance.quote-flash-up,
+.invest-total-amount.quote-flash-up {
+    color: #008a00;
+    transition: color 0.7s ease;
+}
+
+.account-balance.quote-flash-down,
+.invest-total-amount.quote-flash-down {
+    color: #e31837;
+    transition: color 0.7s ease;
 }
 
 .account-day-change {
@@ -2411,6 +2455,7 @@ body.account-detail-open {
     font-weight: 300;
     color: #333;
     margin-bottom: 5px;
+    font-variant-numeric: tabular-nums;
 }
 .invest-change {
     font-size: 14px;
@@ -3220,7 +3265,7 @@ body.account-detail-open {
     border-bottom: 1px solid lightgrey;
     margin-bottom: 25px;
     padding: 8px 0;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 600;
     font-family: inherit;
     outline: none;
@@ -3475,7 +3520,7 @@ body.account-detail-open {
     }
 
     .sign-input {
-        font-size: 15px;
+        font-size: 16px;
     }
 
     .sign-tile {

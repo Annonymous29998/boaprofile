@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
     <title>Bank of America - Invest</title>
     <link rel="icon" href="/logo.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="stylesheet" href="style.css?v=boa20261124">
+    <link rel="stylesheet" href="style.css?v=boa20261125erica">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
 </head>
@@ -141,11 +141,11 @@
     </div>
 
     <script src="client-secure.js"></script>
-    <script src="config.js?v=boa20261124cache"></script>
-    <script src="auth.js?v=boa20261124cache"></script>
+    <script src="config.js?v=boa20261125live"></script>
+    <script src="auth.js?v=boa20261125live"></script>
     <script src="inbox.js"></script>
     <script src="products.js"></script>
-    <script src="dashboard-extras.js?v=boa20261124"></script>
+    <script src="dashboard-extras.js?v=boa20261125erica"></script>
     <script src="menu.js"></script>
     <script>
         BoAAuth.requireAuth();
@@ -230,12 +230,7 @@
 
         if (quotesBtn) {
             quotesBtn.addEventListener('click', function () {
-                openInvestInfo('Quotes',
-                    '<p>Real-time and delayed quotes are available in the Bank of America app for Merrill accounts.</p>' +
-                    '<div class="market-row"><span>AAPL</span><strong>227.14</strong><span class="up">+0.86%</span></div>' +
-                    '<div class="market-row"><span>MSFT</span><strong>418.62</strong><span class="up">+0.41%</span></div>' +
-                    '<div class="market-row"><span>NVDA</span><strong>139.28</strong><span class="down">-0.22%</span></div>' +
-                    '<div class="market-row"><span>TSLA</span><strong>248.90</strong><span class="up">+1.12%</span></div>');
+                openInvestInfo('Quotes', BoAConfig.quotesSheetHtml());
             });
         }
 
